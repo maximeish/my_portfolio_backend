@@ -1,0 +1,23 @@
+[
+    {
+        "username": "test",
+        "user_comment": "lorem...",
+        "date_posted": "2020-12-02T03:20",
+        "likes": 1,
+        "postid": 1
+    },
+    {
+        "username": "test2",
+        "user_comment": "lorem...",
+        "date_posted": "2020-12-02T03:40",
+        "likes": 2,
+        "postid": 2
+    },
+    {
+        "username": "test",
+        "user_comment": "lorem...",
+        "date_posted": "2020-12-02T03:50",
+        "likes": 3,
+        "postid": 3
+    }
+]

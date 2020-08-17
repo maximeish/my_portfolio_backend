@@ -1,5 +1,14 @@
-import users from '../models/users';
+import userData from '../models/user-data.json';
 import uniqid from 'uniqid';
+
+// Assign each user a unique id
+
+let users = [];
+
+for (let user of userData) {
+    user = { id: uniqid('userid-'), ...user };
+    users.push(user);
+}
 
 
 export const getUsers = (req, res) => {
@@ -16,7 +25,7 @@ export const getUserById = (req, res) => {
         }
     })
     
-    if (!reqUser) res.status(404).send("User not found");
+    if (!reqUser) res.status(404).send("Error: User with the provided id not found");
 }
 
 export const addUser = (req, res) => {
@@ -26,7 +35,7 @@ export const addUser = (req, res) => {
         res.status(200).json(users);
     }
 
-    else res.status(501).send('Please, provide all details');
+    else res.status(501).send('Error: Please, provide all details for a user (username, email, password)');
 }
 
 export const deleteUser = (req, res) => {
@@ -40,10 +49,10 @@ export const deleteUser = (req, res) => {
             }
         });
         if (deleted) res.status(200).json(users);
-        else res.status(404).send('User not found');
+        else res.status(404).send('Error: User with the provided id not found');
     }
     
-    else res.status(404).send('User not found');
+    else res.status(404).send('Error: Supply only the user id');
 }
 
 export const updateUser = (req, res) => {

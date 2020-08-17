@@ -1,13 +1,8 @@
 import express from 'express';
-import { restart } from 'nodemon';
-import {getUsers, getUserById, addUser, deleteUser, updateUser} from '../controllers/user.controller';
+import { getUsers, getUserById, addUser, deleteUser, updateUser } from '../controllers/users.controller';
 
 
 const router = express.Router();
-
-router.get('/', (req, res) => {
-    res.status(200).send("Welcome to my blog's backend API");
-});
 
 router.get('/users/:id', (req, res) => getUserById(req, res));
 

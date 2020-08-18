@@ -2,13 +2,13 @@ import express from 'express';
 import { getMessages, addMessage, deleteMessage } from '../controllers/messages.controller';
 
 
-const router = express.Router();
+const route = express.Router();
 
-router.get('/messages', (req, res) => getMessages(req, res));
+route.get('/messages', (req, res) => getMessages(req, res));
 
-router.post('/messages', (req, res) => addMessage(req, res));
+route.post('/messages', (req, res) => addMessage(req, res));
 
-router.delete('/messages/:id', (req, res) => deleteMessage(req, res));
+route.delete('/messages/:id', (req, res) => deleteMessage(req, res));
 
 
-export default router;
+export default route;

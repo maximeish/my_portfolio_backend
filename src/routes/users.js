@@ -2,19 +2,19 @@ import express from 'express';
 import { getUsers, getUserById, addUser, deleteUser, updateUser } from '../controllers/users.controller';
 
 
-const router = express.Router();
+const route = express.Router();
 
-router.get('/users/:id', (req, res) => getUserById(req, res));
+route.get('/users/:id', (req, res) => getUserById(req, res));
 
-router.get('/users', (req, res) => getUsers(req, res));
+route.get('/users', (req, res) => getUsers(req, res));
 
-router.put('/users', (req, res) => updateUser(req, res));
+route.put('/users', (req, res) => updateUser(req, res));
 
-router.post('/users', (req, res) => addUser(req, res));
+route.post('/users', (req, res) => addUser(req, res));
 
-router.delete('/users/:id', (req, res) => deleteUser(req, res));
+route.delete('/users/:id', (req, res) => deleteUser(req, res));
 
 
-export default router;
+export default route;
 
 

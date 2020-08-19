@@ -1,6 +1,9 @@
 {
   "name": "backend-blog-api",
   "version": "1.0.0",
+  "engines": {
+    "node": "10.21.0"
+  },
   "description": "This is a backend API for my blog",
   "main": "index.js",
   "scripts": {

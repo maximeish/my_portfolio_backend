@@ -6,7 +6,7 @@
   "scripts": {
     "dev-mode": "nodemon --exec babel-node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel ./src --out-dir ./build --source-maps --copy-files"
+    "build": "rm -rf build && babel ./src -d build"
   },
   "repository": {
     "type": "git",

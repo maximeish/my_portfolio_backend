@@ -24,7 +24,10 @@ export const getCommentById = (req, res) => {
         }
     })
     
-    if (!reqComment) res.status(404).send("Error: Comment with the provided id not found");
+    if (!reqComment) res.status(404).json({
+        status: 404,
+        message: "Error: Comment with the provided id not found"
+    });
 }
 
 export const addComment = (req, res) => {
@@ -34,7 +37,10 @@ export const addComment = (req, res) => {
         res.status(200).json(comments);
     }
 
-    else res.status(501).send('Error: Please, provide all details for the comment (username, user_comment, date_posted, likes, postid)');
+    else res.status(400).json({
+        status: 400,
+        message: 'Error: Please, provide all details for the comment (username, user_comment, date_posted, likes, postid)'
+    });
 }
 
 export const deleteComment = (req, res) => {
@@ -48,10 +54,16 @@ export const deleteComment = (req, res) => {
             }
         });
         if (deleted) res.status(200).json(comments);
-        else res.status(404).send('Error: Comment with the provided id not found or unauthorized user. Supply data in /users/<username>/<commentid> format');
+        else res.status(404).json({
+            status: 404,
+            message: 'Error: Comment with the provided id not found or unauthorized user. Supply data in /users/<username>/<commentid> format'
+        });
     }
     
-    else res.status(404).send('Error: Supply only the comment id');
+    else res.status(400).json({
+        status: 400,
+        message: 'Error: Supply only the comment id'
+    });
 }
 
 export const updateComment = (req, res) => {
@@ -67,7 +79,16 @@ export const updateComment = (req, res) => {
                 } 
             });
             if (updated) res.status(200).json(comments);
-            else res.status(404).send('Comment with the provided id not found or unauthorized user');
-        } else res.status(501).send('Please provide a comment id');
-    } else res.status(501).send('Please, update at least one field: user_comment, likes, or date_posted (you must also supply the username)');
+            else res.status(404).json({
+                status: 404,
+                message: 'Comment with the provided id not found or unauthorized user'
+            });
+        } else res.status(400).json({
+            status: 400,
+            message: 'Please provide a comment id'
+        });
+    } else res.status(400).json({
+        status: 400,
+        message: 'Please, update at least one field: user_comment, likes, or date_posted (you must also supply the username)'
+    });
 }

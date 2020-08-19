@@ -4,6 +4,9 @@ import { getUsers, getUserById, addUser, deleteUser, updateUser } from '../contr
 
 const route = express.Router();
 
+//Verify if it is the admin logged in
+// const verifyToken = 
+
 route.get('/users/:id', (req, res) => getUserById(req, res));
 
 route.get('/users', (req, res) => getUsers(req, res));

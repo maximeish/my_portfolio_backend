@@ -1,10 +1,10 @@
 import express from 'express';
 import * as bodyParser from 'body-parser';
+import createError from 'http-errors';
 import users from './routes/users';
 import posts from './routes/posts';
 import messages from './routes/messages';
 import postComments from './routes/post-comments';
-import createError from 'http-errors';
 import auth from './routes/auth.route';
 
 const app = express();
@@ -26,11 +26,11 @@ app.use('/', messages);
 app.use('/', postComments);
 app.use('/', auth);
 
-app.use(async (req, res, next) => {
+app.use((req, res, next) => {
     next(createError(404, "Resource Not Found"));
 });
 
-app.use(async (err, req, res, next) => {
+app.use((err, req, res, next) => {
     res.status(err.status).send({
         error: {
             status: err.status,
@@ -40,5 +40,5 @@ app.use(async (err, req, res, next) => {
 });
 
 app.listen(port, () => {
-    console.log(`todo-api listening on http://localhost:${port}`);
+    console.log(`Server listening on http://localhost:${port}`);
 });

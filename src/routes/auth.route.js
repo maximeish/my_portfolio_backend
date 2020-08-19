@@ -1,30 +1,46 @@
 import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
 import express from 'express';
+import { login } from '../controllers/login.controller';
+import { signup } from '../controllers/signup.controller';
 
 dotEnv.config();
+
 const route = express.Router();
 
-route.post('/signup', async(req, res) => {
-    // const { username, email, password } = req.query;
-    const username = req.query.username;
-    const email = req.query.email;
-    const password = req.query.password;
+const verifyToken = (req, res, next) => {
+    //get the auth token from the header
+    let bearerToken;
+    if(req.headers['authorization']) {
+        //Set the bearer token to req and call next() to pass a modified req
+        bearerToken = req.headers['authorization'].split(' ')[1];
+        req.token = bearerToken;
+        next();
+    }
+    else res.sendStatus(403);
+}
+
+route.post('/signup', async(req, res) => signup(req, res));
+
+route.post('/login', async(req, res, next) => login(req, res, next));
+
+route.post('/admin', verifyToken, (req, res, next) => {
     try {
-        const token = jwt.sign(
-                    { username, email, password },
-                    process.env.SECRET_KEY,
-                    { algorithm: 'RS256' });
-        res.status(200).send(token);
+        jwt.verify(req.token, process.env.SECRET_KEY, (err, authData) => {
+            if (err) res.sendStatus(403);
+            else 
+                res.status(200).json({
+                    message: 'Welcome admin',
+                    authData
+                });
+        });
     } catch (err) {
-        // res.send('Cannot sign up, bad request');
-        res.json(req.body)
+        res.json({
+            status: err.status,
+            message: err.message
+        })
     }
 });
 
-
-// route.post('/login', (req, res, next) => {
-
-// });
 
 export default route;

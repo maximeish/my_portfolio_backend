@@ -22,7 +22,10 @@ export const addMessage = (req, res) => {
         res.status(200).json(messages);
     }
 
-    else res.status(501).send('Error: Please, provide all details for the message (name, email, telephone, message, date_sent)');
+    else res.status(400).json({
+        status: 400,
+        message: 'Error: Please, provide all details for the message (name, email, telephone, message, date_sent)'
+    });
 }
 
 export const deleteMessage = (req, res) => {
@@ -36,8 +39,14 @@ export const deleteMessage = (req, res) => {
             }
         });
         if (deleted) res.status(200).json(messages);
-        else res.status(404).send('Error: Message with the provided id not found');
+        else res.status(404).json({
+            status: 404,
+            message: 'Error: Message with the provided id not found'
+        });
     }
     
-    else res.status(404).send('Error: Supply only the message id');
+    else res.status(400).json({
+        status: 400,
+        message: 'Error: Supply only the message id'
+    });
 }

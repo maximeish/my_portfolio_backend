@@ -1,5 +1,9 @@
 import userData from '../models/user-data.json';
 import uniqid from 'uniqid';
+import jwt from 'jsonwebtoken';
+import dotEnv from 'dotenv';
+
+dotEnv.config();
 
 // Assign each user a unique id
 
@@ -25,18 +29,15 @@ export const getUserById = (req, res) => {
         }
     })
     
-    if (!reqUser) res.status(404).send("Error: User with the provided id not found");
+    if (!reqUser) res.status(404).json({
+        status: 404,
+        message: "User with the provided id not found"
+    });
 }
 
-export const addUser = (req, res) => {
-    if (Object.values(req.query).length === 3) {
-        users.push({id: uniqid('userid-'), ...req.query});
-        console.log(`User with id ${users[users.length - 1].id} successfully created`)
-        res.status(200).json(users);
-    }
+// export const addUser = (req, res) => {
 
-    else res.status(501).send('Error: Please, provide all details for a user (username, email, password)');
-}
+// }
 
 export const deleteUser = (req, res) => {
     let deleted = false;
@@ -49,10 +50,16 @@ export const deleteUser = (req, res) => {
             }
         });
         if (deleted) res.status(200).json(users);
-        else res.status(404).send('Error: User with the provided id not found');
+        else res.status(404).json({
+            status: 404,
+            message: 'User with the provided id not found'
+        });
     }
     
-    else res.status(404).send('Error: Supply only the user id');
+    else res.status(400).json({
+        status: 400,
+        message: 'Supply only the user id'
+    });
 }
 
 export const updateUser = (req, res) => {
@@ -67,8 +74,24 @@ export const updateUser = (req, res) => {
                     updated = true;
                 }
             });
-            if (updated) res.status(200).json(users);
-            else res.status(404).send('User with the provided id not found');
-        } else res.status(501).send('Please provide a user id');
-    } else res.status(501).send('Please, update at least one field: username, email or password');
+            if (updated) 
+                res.status(200).json({
+                    count: users.length,
+                    users
+                });
+            else 
+                res.status(404).json({
+                    status: 404,
+                    message: 'User with the provided id not found'
+                });
+        } else
+            res.status(400).json({
+                status: 400,
+                message: 'Please provide a user id'
+            });
+    } else
+        res.status(400).json({
+            status: 400,
+            message: 'Please, update at least one field: username, email or password'
+        });
 }

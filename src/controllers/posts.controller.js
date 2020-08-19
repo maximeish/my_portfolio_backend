@@ -11,7 +11,10 @@ for (let post of postData) {
 }
 
 export const getPosts = (req, res) => {
-    res.status(200).json(posts);
+    res.status(200).json({
+        count: posts.length,
+        posts
+    });
 }
 
 export const getPostById = (req, res) => {
@@ -24,7 +27,10 @@ export const getPostById = (req, res) => {
         }
     })
     
-    if (!reqPost) res.status(404).send("Error: Post with the provided id not found");
+    if (!reqPost) res.status(404).json({
+        status: 404,
+        message: "Error: Post with the provided id not found"
+    });
 }
 
 export const addPost = (req, res) => {
@@ -34,7 +40,10 @@ export const addPost = (req, res) => {
         res.status(200).json(posts);
     }
 
-    else res.status(501).send('Error: Please, provide all details for the post (title, date_posted, paragraphs)');
+    else res.status(400).json({
+        status: 400,
+        message: 'Error: Please, provide all details for the post (title, date_posted, paragraphs)'
+    });
 }
 
 export const deletePost = (req, res) => {
@@ -48,10 +57,16 @@ export const deletePost = (req, res) => {
             }
         });
         if (deleted) res.status(200).json(posts);
-        else res.status(404).send('Error: Post with the provided id not found');
+        else res.status(404).json({
+            status: 404,
+            message: 'Error: Post with the provided id not found'
+        });
     }
     
-    else res.status(404).send('Error: Supply only the post id');
+    else res.status(400).json({
+        status: 400,
+        message: 'Error: Supply only the post id'
+    });
 }
 
 export const updatePost = (req, res) => {
@@ -66,8 +81,21 @@ export const updatePost = (req, res) => {
                     updated = true;
                 }
             });
-            if (updated) res.status(200).json(posts);
-            else res.status(404).send('Post with the provided id not found');
-        } else res.status(501).send('Please provide a post id');
-    } else res.status(501).send('Please, update at least one field: title, date_posted or paragraphs');
+            if (updated) 
+                res.status(200).json({
+                    count: posts.length, 
+                    posts
+                });
+            else res.status(404).json({
+                status: 404,
+                message: 'Post with the provided id not found'
+            });
+        } else res.status(400).json({
+            status: 400, 
+            message: 'Please provide a post id'
+        });
+    } else res.status(400).json({
+        status: 400,
+        message: 'Please, update at least one field: title, date_posted or paragraphs'
+    });
 }

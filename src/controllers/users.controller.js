@@ -1,9 +1,9 @@
 import userData from '../models/user-data.json';
 import uniqid from 'uniqid';
-import jwt from 'jsonwebtoken';
-import dotEnv from 'dotenv';
+// import jwt from 'jsonwebtoken';
+// import dotEnv from 'dotenv';
 
-dotEnv.config();
+// dotEnv.config();
 
 // Assign each user a unique id
 
@@ -13,7 +13,6 @@ for (let user of userData) {
     user = { id: uniqid('userid-'), ...user };
     users.push(user);
 }
-
 
 export const getUsers = (req, res) => {
     res.status(200).json(users);

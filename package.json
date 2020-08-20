@@ -9,9 +9,7 @@
   "scripts": {
     "dev-mode": "nodemon --exec babel-node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf ./build/ && babel ./src/ -d ./build/ && cp -r ./src/models/ ./build/models/",
-    "heroku-prebuild": "export NPM_CONFIG_PRODUCTION=false; export NODE_ENV=; NPM_CONFIG_PRODUCTION=false NODE_ENV=development npm install --only=dev --dev",
-    "heroku-postbuild": "export NPM_CONFIG_PRODUCTION=true; export NODE_ENV=production;"
+    "build": "rm -rf ./build/ && babel ./src/ -d ./build/ && cp -r ./src/models/ ./build/models/"
   },
   "repository": {
     "type": "git",

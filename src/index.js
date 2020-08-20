@@ -8,7 +8,7 @@ import postComments from './routes/post-comments';
 import auth from './routes/auth.route';
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // support parsing of application/json type post data
 app.use(bodyParser.json());

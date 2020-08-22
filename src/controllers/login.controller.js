@@ -21,26 +21,25 @@ export const login = (req, res) => {
             if (email === user.email && password === user.password) {
                 req.auth = true;
                 try {
-                    jwt.sign({ username: user.username, email, password }, process.env.SECRET_KEY, (err, token) => {
+                    jwt.sign({ username: user.username, email, password, role: user.role }, process.env.SECRET_KEY, (err, token) => {
                         if(token) {
                             req.auth = true;
-                            res.status(200).json({ token });
                             req.token = token;
-                            next();
+                            return res.status(200).json({ token });
                         }
                         else if(err)
-                            res.status(err.status).json({
+                            return res.status(err.status).json({
                                 status: err.status,
                                 message: err.message
                             })
                         else
-                            res.status(501).json({
+                            return res.status(501).json({
                                 status: 501,
                                 message: "Unknown error"
                             });
                     })
                 } catch (err) {
-                    res.json({
+                    return res.json({
                         status: err.status,
                         message: err.message
                     })
@@ -48,15 +47,14 @@ export const login = (req, res) => {
             }
         }
     } else {
-        res.status(400).json({
-            status: 400,
+        return res.status(400).json({
+            status: 'Bad Request',
             message: 'You need to supply the email and password'
         })
     }
-    console.log(req.auth)
     if(!req.auth) {
-        res.status(401).json({
-            status: 401,
+        return res.status(401).json({
+            status: 'Unauthorized',
             message: 'Unable to find user with the provided email / password combination'
         });
     }

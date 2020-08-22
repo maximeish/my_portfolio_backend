@@ -20,10 +20,10 @@ export const signup = (req, res) => {
     if (username && email && password && role) {
         if (role === 'user' || role === 'admin') {
             users.push({id: uniqid('userid-'), ...{ username, email, password, role }});
-            console.log(`User with id ${users[users.length - 1].id} successfully created`)
+            //console.log(`User with id ${users[users.length - 1].id} successfully created`)
 
 
-            try {
+            // try {
                 jwt.sign({ username, email, password, role }, process.env.SECRET_KEY, (err, token) => {
                     if(token) {
                         res.status(200).json({
@@ -35,31 +35,31 @@ export const signup = (req, res) => {
                     }
                     else if (err)
                         res.status(400).json({
-                            status: err.status,
+                            status: 'Bad Request',
                             message: err.message
                         })
                     else 
                         res.status(501).json({
-                            status: 501,
+                            status: 'Server Error',
                             message: "Unknown error"
                         });
                 });
-            } catch (err) {
-                res.json({
-                    status: err.status,
-                    message: err.message
-                })
-            }
+            // } catch (err) {
+            //     res.json({
+            //         status: err.status,
+            //         message: err.message
+            //     })
+            // }
         } else {
             res.status(400).json({
-                status: 400,
+                status: 'Bad Request',
                 message: 'The user role should be either "user" or "admin"'
             });
         }
     }
 
     else res.status(400).json({
-        status: 400,
-        message: 'Please, provide all details for a user (username, email, password)'
+        status: 'Bad Request',
+        message: 'Please, provide all details for a user (username, email, password, role)'
     });
 }

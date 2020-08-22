@@ -7,7 +7,7 @@ dotEnv.config();
 //middleware to get the token from the request header
 //and pass it to the next /admin middleware to verify
 //if user is admin or not
-export const verifyToken = (req, res, nextMiddleware) => {
+export const getToken = (req, res, nextMiddleware) => {
     //get the auth token from the header
     let bearerToken;
     if(req.headers['authorization']) {
@@ -16,5 +16,8 @@ export const verifyToken = (req, res, nextMiddleware) => {
         req.token = bearerToken;
         nextMiddleware();
     }
-    else res.sendStatus(403);
+    else {
+    	req.token = 'invalid';
+    	nextMiddleware();
+    }
 }

@@ -1,5 +1,9 @@
 import commentData from '../models/comment-data.json';
 import uniqid from 'uniqid';
+import jwt from 'jsonwebtoken';
+import dotEnv from 'dotenv';
+
+dotEnv.config();
 
 // Assign each user a unique id
 
@@ -31,39 +35,74 @@ export const getCommentById = (req, res) => {
 }
 
 export const addComment = (req, res) => {
-    if (Object.values(req.query).length === 5) {
-        comments.push({id: uniqid('commentid-'), ...req.query});
-        console.log(`Comment with id ${comments[comments.length - 1].id} successfully created`)
-        res.status(200).json(comments);
+    const { token, user_comment, date_posted, likes, postid } = req.headers;
+    
+    if (token && user_comment && date_posted && likes && postid) {
+        //Verify if token is valid
+        jwt.verify(token, process.env.SECRET_KEY, (err, authUser) => {
+            if (err) {
+                return res.status(403).json({
+                    status: "Unauthorized",
+                    message: "Not allowed to comment"
+                });
+            } else if (authUser) {
+                comments.push({id: uniqid('commentid-'), ...req.query});
+                res.status(200).json({
+                    status: 'Success',
+                    message: "Comment posted successfully"
+                });
+            }
+        });
+    } else {
+        return res.status(400).json({
+            status: 'Bad Request',
+            message: 'Error: Please, provide all details for the comment (token, user_comment, date_posted, likes, postid)'
+        });
     }
-
-    else res.status(400).json({
-        status: 400,
-        message: 'Error: Please, provide all details for the comment (username, user_comment, date_posted, likes, postid)'
-    });
 }
 
 export const deleteComment = (req, res) => {
     let deleted = false;
-    if (Object.values(req.params).length === 2) {
-        comments.map((comment, index) => {
-            if (comment.id === req.params.id && comment.username === req.params.username) {
-                comments.splice(index, 1);
-                console.log(`Comment with id ${req.params.id} successfully deleted`);
-                deleted = true;
+    const { token, commentid } = req.headers;
+    if (token && commentid) {
+        //Verify if the token is valid
+        jwt.verify(token, process.env.SECRET_KEY, (err, authUser) => {
+            if (err) {
+                return res.status(403).json({
+                    status: "Unauthorized",
+                    message: "Invalid token"
+                });
+            } else if (authUser) {
+                comments.map((comment, index) => {
+                    if (comment.id === commentid && comment.username === authUser.username) {
+                        comments.splice(index, 1);
+                        deleted = true;
+                    }
+                });
             }
         });
-        if (deleted) res.status(200).json(comments);
-        else res.status(404).json({
-            status: 404,
-            message: 'Error: Comment with the provided id not found or unauthorized user. Supply data in /users/<username>/<commentid> format'
-        });
+
+        
+        if (deleted) {
+            return res.status(200).json({
+                status: "Success",
+                message: "Comment successfully deleted"
+            });
+        }
+        else {
+            return res.status(404).json({
+                status: 'Not Found',
+                message: 'Error: Comment with the provided id not found or unauthorized user. Supply data in /users/<username>/<commentid> format'
+            });
+        }
     }
     
-    else res.status(400).json({
-        status: 400,
-        message: 'Error: Supply only the comment id'
-    });
+    else {
+        return res.status(400).json({
+            status: 'Bad Request',
+            message: 'You need to supply the token and commentid'
+        });
+    }
 }
 
 export const updateComment = (req, res) => {

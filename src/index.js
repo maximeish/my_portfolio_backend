@@ -17,7 +17,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-    res.status(200).send("Welcome to my blog's backend API");
+    res.status(200).json({
+        message: "Welcome to my blog's backend API"
+    });
 });
 
 app.use('/', users);
@@ -31,14 +33,13 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-    res.status(err.status).send({
-        error: {
-            status: err.status,
-            message: err.message
-        }
+    res.status(err.status).json({
+        message: err.message
     });
 });
 
 app.listen(port, () => {
     console.log(`Server listening on http://localhost:${port}`);
 });
+
+export default app;

@@ -8,11 +8,11 @@ route.get('/comments/:id', (req, res) => getCommentById(req, res));
 
 route.get('/comments', (req, res) => getComments(req, res));
 
-route.post('/comment', (req, res) => addComment(req, res));
+route.post('/addComment', (req, res) => addComment(req, res));
 
-route.put('/comments', (req, res) => updateComment(req, res));
+route.put('/updateComment', (req, res) => updateComment(req, res));
 
-route.delete('/comments/:username/:id', (req, res) => deleteComment(req, res));
+route.delete('/deleteComment', (req, res) => deleteComment(req, res));
 
 
 export default route;

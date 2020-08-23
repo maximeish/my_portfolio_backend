@@ -4,8 +4,7 @@ import server from '../../index';
 
 chai.use(chaiHttp);
 
-describe("API calls to auth routes", () => {
-
+describe("Tests to API auth routes", () => {
     describe("POST requests to /signup", () => {
         it('(200 Success) user SIGN UP by POST to /signup and get token', done => {
             chai.request(server)

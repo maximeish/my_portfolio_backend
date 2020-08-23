@@ -8,7 +8,7 @@ route.get('/comments/:id', (req, res) => getCommentById(req, res));
 
 route.get('/comments', (req, res) => getComments(req, res));
 
-route.post('/comments', (req, res) => addComment(req, res));
+route.post('/comment', (req, res) => addComment(req, res));
 
 route.put('/comments', (req, res) => updateComment(req, res));
 

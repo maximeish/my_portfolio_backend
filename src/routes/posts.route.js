@@ -4,11 +4,12 @@ import {getPosts, getPostById, addPost, deletePost, updatePost} from '../control
 
 const route = express.Router();
 
-route.get('/posts/:id', (req, res) => getPostById(req, res));
 
 route.get('/posts', (req, res) => getPosts(req, res));
 
 route.put('/posts', (req, res) => updatePost(req, res));
+
+route.post('/blogPost', (req, res) => getPostById(req, res));
 
 route.post('/posts', (req, res) => addPost(req, res));
 

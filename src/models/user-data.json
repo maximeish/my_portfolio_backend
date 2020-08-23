@@ -1,17 +1,23 @@
 [
     {
-        "username": "Test",
-        "email": "test@tset.com",
-        "password": "tempone"
+        "id": 1,
+        "username": "Admin",
+        "email": "admin@api.com",
+        "password": "tempone",
+        "role": "admin"
     },
     {
+        "id": 2,
         "username": "Test2",
         "email": "test2@tset.com",
-        "password": "tempone"
+        "password": "temponesdf",
+        "role": "user"
     },
     {
+        "id": 3,
         "username": "Test3",
         "email": "test3@tset.com",
-        "password": "tempone"
+        "password": "temponesds",
+        "role": "user"
     }
 ]

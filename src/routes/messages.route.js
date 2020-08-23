@@ -8,7 +8,4 @@ route.get('/messages', (req, res) => getMessages(req, res));
 
 route.post('/messages', (req, res) => addMessage(req, res));
 
-route.delete('/messages/:id', (req, res) => deleteMessage(req, res));
-
-
 export default route;

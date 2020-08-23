@@ -1,52 +1,65 @@
 import messageData from '../models/message-data.json';
-import uniqid from 'uniqid';
+import jwt from 'jsonwebtoken';
+import dotEnv from 'dotenv';
 
-// Assign each message a unique id
-
-let messages = [];
-
-for (let message of messageData) {
-    message = { id: uniqid('msgid-'), ...message };
-    messages.push(message);
-}
+dotEnv.config();
 
 export const getMessages = (req, res) => {
-    res.status(200).json(messages);
+    const { usertoken } = req.headers;
+    if (usertoken) {
+        jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
+            if (err) {
+                return res.status(403).json({
+                    status: "Unauthorized",
+                    message: "Cannot get messages due to invalid user token"
+                });
+            };
+
+            if (authUser.role !== 'admin') {
+                return res.status(403).json({
+                    status: "Unauthorized",
+                    message: "You are not authorized to use this feature"
+                });
+            };
+
+            if (authUser.role === 'admin') {
+                return res.status(200).json({
+                    status: "Success",
+                    messagesCount: messageData.length,
+                    messages: messageData
+                });
+            };
+        });
+    } else {
+        return res.status(400).json({
+            status: "Bad Request",
+            message: "You need to supply a user token"
+        });
+    };
 }
 
 
 export const addMessage = (req, res) => {
-    if (Object.values(req.query).length === 5) {
-        messages.push({id: uniqid('postid-'), ...req.query});
-        console.log(`Message with id ${messages[messages.length - 1].id} successfully created`)
-        res.status(200).json(messages);
+    let { name, email, telephone, message } = req.headers;
+    if (email || telephone) {
+        let messagesCount = messageData.length;
+        name = name || null;
+        email = email || null;
+        telephone = telephone || null;
+        message = message || null;
+
+        messageData.push({id: ++messagesCount, ...{name, email, telephone, message}});
+        
+        return res.status(200).json({
+            status: "Success",
+            message: "Message saved successfully"
+        });
+        
     }
 
-    else res.status(400).json({
-        status: 400,
-        message: 'Error: Please, provide all details for the message (name, email, telephone, message, date_sent)'
-    });
-}
-
-export const deleteMessage = (req, res) => {
-    let deleted = false;
-    if (Object.values(req.params).length === 1) {
-        messages.map((message, index) => {
-            if (message.id === req.params.id) {
-                messages.splice(index, 1);
-                console.log(`Message with id ${req.params.id} successfully deleted`);
-                deleted = true;
-            }
+    else 
+        return res.status(400).json({
+            status: 400,
+            message: 'Please, provide at least the email or telephone'
         });
-        if (deleted) res.status(200).json(messages);
-        else res.status(404).json({
-            status: 404,
-            message: 'Error: Message with the provided id not found'
-        });
-    }
-    
-    else res.status(400).json({
-        status: 400,
-        message: 'Error: Supply only the message id'
-    });
 }

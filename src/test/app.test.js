@@ -4,7 +4,7 @@ import app from '../index';
 
 chai.use(chaiHttp);
 
-describe('Blog API call default behavior', () => {
+describe('API base route default behavior', () => {
     it('(200 Success) GET /', done => {
         chai.request(app)
             .get('/')

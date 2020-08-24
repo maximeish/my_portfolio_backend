@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "dev-mode": "nodemon --exec babel-node src/index.js",
-    "test": "mocha --require @babel/polyfill --require @babel/register --recursive --exit ./src/test/",
+    "test": "nyc --reporter=html --reporter=text mocha --require @babel/polyfill --require @babel/register --recursive --exit ./src/test/",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "build": "rm -rf ./build/ && babel ./src/ -d ./build/ && cp -r ./src/models/ ./build/models/"
   },
   "repository": {
@@ -30,8 +31,11 @@
     "@babel/preset-env": "^7.11.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
+    "coverage": "^0.4.1",
+    "coveralls": "^3.1.0",
     "mocha": "^8.1.1",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "nyc": "^15.1.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.11.2",

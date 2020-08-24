@@ -1,23 +1,29 @@
 [
     {
-        "username": "test",
+        "commentid": 1,
+        "username": "Admin",
         "user_comment": "lorem...",
         "date_posted": "2020-12-02T03:20",
-        "likes": 1,
-        "postid": 1
+        "likes": 0,
+        "postid": 1,
+        "user_liked": []
     },
     {
-        "username": "test2",
+        "commentid": 2,
+        "username": "Test2",
         "user_comment": "lorem...",
         "date_posted": "2020-12-02T03:40",
-        "likes": 2,
-        "postid": 2
+        "likes": 0,
+        "postid": 2,
+        "user_liked": []
     },
     {
-        "username": "test",
+        "commentid": 3,
+        "username": "Test3",
         "user_comment": "lorem...",
         "date_posted": "2020-12-02T03:50",
-        "likes": 3,
-        "postid": 3
+        "likes": 0,
+        "postid": 1,
+        "user_liked": []
     }
 ]

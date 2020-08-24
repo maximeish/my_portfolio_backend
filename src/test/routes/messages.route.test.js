@@ -83,7 +83,6 @@ describe("Tests to API Contact form routes", () => {
 					.set('usertoken', tokens.adminToken)
 					.end((err, res) => {
 						if (err) done(err);
-						console.log(res.body, res.status);
 						assert.equal(res.status, 200);
 						done();
 					})
@@ -100,7 +99,6 @@ describe("Tests to API Contact form routes", () => {
 			.set('message', 'asdf kljsfd  asdkfj a')
 			.end((err, res) => {
 				if (err) done(err);
-				console.log(res.body, res.status);
 				assert.equal(res.status, 200);
 				done();
 			});

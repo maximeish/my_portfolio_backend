@@ -91,9 +91,9 @@ export const getPostById = (req, res) => {
     if (posttoken) {
         jwt.verify(posttoken, process.env.SECRET_KEY, (err, postData) => {
             if (err) {
-                res.status(400).json({
-                    status: 'Bad Request',
-                    message: 'You need to supply a VALID post token'
+                res.status(404).json({
+                    status: 'Not Found',
+                    message: 'Cannot find a post with the provided token. You need to supply a VALID post token'
                 });
             }
 
@@ -103,71 +103,84 @@ export const getPostById = (req, res) => {
                     // User may be logged in
                     jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
                         if (err) {
-                            // User not logged in
-
-                            for (let post of posts) {
-                                if(post.id === postData.id) {
-                                    postAvailable = true;
-                                    let comments = [];
-                                    //Find the comments with a matching id of each post 
-                                    //and add them to the post's comment count
-                                    postCommentsData.forEach(comment => {
-                                        if (post.id === comment.postid) {
-                                            comments.push(comment);
-                                        };
-                                    });
-                                    return res.status(200).json({
-                                        status: 'Success - Post Found - User NOT logged in',
-                                        userToken: null,
-                                        post,
-                                        commentsCount: comments.length,
-                                        comments
-                                    });
-
-                                    break;
-                                };
-                            }
-                            
-                            if(!postAvailable)          
-                                return res.status(404).json({
-                                    status: 'Post NOT Found - User NOT logged in',
-                                    userToken: usertoken,
-                                    message: "Post with the provided id not found"
-                                });
+                            // Got an invalid user token
+                            return res.status(400).json({
+                                status: "Bad Request",
+                                message: "Invalid user token"
+                            });
                         }
 
                         if (authUser) {
                             // User is logged in
-                            for (let post of posts) {
-                                if(post.id === postData.id) {
-                                    postAvailable = true;
-                                    let comments = [];
-                                    //Find the comments with a matching id of each post 
-                                    //and add them to the post's comment count
-                                    postCommentsData.forEach(comment => {
-                                        if (post.id === comment.postid) {
-                                            comments.push(comment);
-                                        };
-                                    });
-                                    
-                                    return res.status(200).json({
-                                        status: 'Success - User logged in',
-                                        userToken: usertoken,
-                                        post,
-                                        commentsCount: comments.length,
-                                        comments                                        
-                                    });
+                            if (authUser.role === 'user') {
+                                for (let post of posts) {
+                                    if(post.id === postData.id) {
+                                        postAvailable = true;
+                                        let comments = [];
+                                        //Find the comments with a matching id of each post 
+                                        //and add them to the post's comment count
+                                        postCommentsData.forEach(comment => {
+                                            if (post.id === comment.postid) {
+                                                comments.push(comment);
+                                            };
+                                        });
+                                        
+                                        return res.status(200).json({
+                                            status: 'Success - User logged in',
+                                            userToken: usertoken,
+                                            userRole: 'user',
+                                            post,
+                                            commentsCount: comments.length,
+                                            comments                                        
+                                        });
 
-                                    break;
+                                        break;
+                                    }
                                 }
+                                
+                                if (!postAvailable) 
+                                    return res.status(404).json({
+                                        status: 'Post NOT Found - User logged in',
+                                        userToken: usertoken,
+                                        userRole: 'user',
+                                        message: "Post with the provided postid NOT found"
+                                    });
                             }
-                            
-                            if (!postAvailable) 
-                                return res.status(404).json({
-                                    status: 'Post NOT Found - User logged in',
-                                    userToken: usertoken,
-                                    message: "Post with the provided postid NOT found"
-                                });
+
+                            if (authUser.role === 'admin') {
+                                for (let post of posts) {
+                                    if(post.id === postData.id) {
+                                        postAvailable = true;
+                                        let comments = [];
+                                        //Find the comments with a matching id of each post 
+                                        //and add them to the post's comment count
+                                        postCommentsData.forEach(comment => {
+                                            if (post.id === comment.postid) {
+                                                comments.push(comment);
+                                            };
+                                        });
+                                        
+                                        return res.status(200).json({
+                                            status: 'Success - Admin user logged in',
+                                            userToken: usertoken,
+                                            userRole: 'admin',
+                                            post,
+                                            commentsCount: comments.length,
+                                            comments                                        
+                                        });
+
+                                        break;
+                                    }
+                                }
+                                
+                                if (!postAvailable) 
+                                    return res.status(404).json({
+                                        status: 'Post NOT Found - Admin user logged in',
+                                        userToken: usertoken,
+                                        userRole: 'admin',
+                                        message: "Post with the provided postid NOT found"
+                                    });
+                            }
                         }
                     });
                 } else {
@@ -188,6 +201,7 @@ export const getPostById = (req, res) => {
                             return res.status(200).json({
                                 status: 'Success - Post Found - User NOT logged in',
                                 userToken: null,
+                                userRole: 'guest',
                                 post,
                                 commentsCount: comments.length,
                                 comments 
@@ -202,6 +216,7 @@ export const getPostById = (req, res) => {
                         return res.status(404).json({
                             status: 'Post NOT Found - User NOT logged in',
                             userToken: null,
+                            userRole: 'guest',
                             message: "Post with the provided id NOT found"
                         });
                 }

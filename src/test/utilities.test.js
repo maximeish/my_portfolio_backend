@@ -1,15 +1,11 @@
-import chai, {assert} from 'chai';
-import chaiHttp from 'chai-http';
-import server from '../index';
+// import chai, {assert} from 'chai';
+// import chaiHttp from 'chai-http';
+// import server from '../index';
 
-chai.use(chaiHttp);
+// chai.use(chaiHttp);
 
 //Get admin user token, normal user token, first comment token (admin comment)
 //and first Post token
-
-// async init() => {
-//     return await initializeWhatever()
-// }
 
 // const tokens = {
 // 	adminToken: null,
@@ -17,6 +13,8 @@ chai.use(chaiHttp);
 // 	commentToken: null,
 // 	postToken: null,
 // }
+
+
 
 // describe("Getting tokens for admin user, normal user, first comment (admin comment) and first Post", async() => {
 //     it("Get admin user token", done => {

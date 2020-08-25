@@ -12,7 +12,7 @@ const tokens = {
 }
 
 describe('Tests to API post routes', () => {
-	describe('Tests for retrieving posts', () => {
+	describe('Tests for retrieving posts from admin page', () => {
 		it('(200 Success) GET /getPosts to get all posts with admin user token', done => {
 			chai.request(server)
 		    	.post('/login')
@@ -74,7 +74,7 @@ describe('Tests to API post routes', () => {
 	});
 
 
-	describe('Tests for Adding Posts', () => {
+	describe('Tests for Adding Posts from admin page', () => {
 		it('(200 Success) POST /addPost to add a post with (admin token, title, paragraphs)', done => {
 			chai.request(server)
 				.post('/addPost')
@@ -167,27 +167,109 @@ describe('Tests to API post routes', () => {
 	});
 
 
+	describe('Tests for retrieving posts from the blog page', () => {
+		it('(200 Success) GET /blogPost to get a blog post using its posttoken as a not logged in user (post token)', done => {
+			chai.request(server)
+				.get('/getPosts')
+				.set('usertoken', tokens.adminToken)
+				.end((err, res) => {
+					if (err) done(err);
+					tokens.postToken = res.body.posts[0].postToken;
+					chai.request(server)
+						.get('/blogPost')
+						.set('posttoken', tokens.postToken)
+						.end((err, res) => {
+							if (err) done(err);
+							assert.equal(res.status, 200);
+							assert.deepPropertyVal(res.body, 'userRole', 'guest');
+							done();
+						});
+				})
+		});
 
-	it('(200 Success) POST /blogPost', done => {
-		chai.request(server)
-			.post('/blogPost')
-			.end((err, res) => {
-				if (err) done(err);
-				console.log(res.body, res.status);
-				assert.equal(res.status, 200);
-				done();
-			});
+		it('(400 Bad Request) GET /blogPost to get a blog post without the posttoken as a not logged in user', done => {
+			chai.request(server)
+				.get('/blogPost')
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 400);
+					done();
+				});
+		});
+
+		it('(404 Not Found) GET /blogPost to get a blog post with an invalid posttoken as a not logged in user', done => {
+			chai.request(server)
+				.get('/blogPost')
+				.set('posttoken', 'kasdfjkldfjakldsf')
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 404);
+					done();
+				});
+		});
+
+
+		it('(200 Success) GET /blogPost to get a blog post using its posttoken as a logged in normal user (usertoken, posttoken)', done => {
+			chai.request(server)
+				.get('/blogPost')
+				.set('usertoken', tokens.normalUserToken)
+				.set('posttoken', tokens.postToken)
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 200);
+					assert.deepPropertyVal(res.body, 'userRole', 'user');
+					done();
+				});
+		});
+
+		it('(400 Bad Request) GET /blogPost to get a blog post using its posttoken but with an invalid usertoken (usertoken, posttoken)', done => {
+			chai.request(server)
+				.get('/blogPost')
+				.set('usertoken', 'askdfjadwfjal')
+				.set('posttoken', tokens.postToken)
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 400);
+					done();
+				});
+		});
+
+		it('(404 Not Found) GET /blogPost to get a blog post using an invalid posttoken but with a valid normal usertoken (usertoken, posttoken)', done => {
+			chai.request(server)
+				.get('/blogPost')
+				.set('usertoken', tokens.normalUserToken)
+				.set('posttoken', 'aksdjfkdjfsakl')
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 404);
+					done();
+				});
+		});
+
+		it('(404 Not Found) GET /blogPost to get a blog post using an invalid posttoken with also an invalid usertoken (usertoken, posttoken)', done => {
+			chai.request(server)
+				.get('/blogPost')
+				.set('usertoken', 'ksjdfkladfjkldfjk')
+				.set('posttoken', 'aksdjfkdjfsakl')
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 404);
+					done();
+				});
+		});
+
+		it('(200 Success) GET /blogPost to get a blog post using its posttoken as a logged in admin user (usertoken, posttoken)', done => {
+			chai.request(server)
+				.get('/blogPost')
+				.set('usertoken', tokens.adminToken)
+				.set('posttoken', tokens.postToken)
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 200);
+					assert.deepPropertyVal(res.body, 'userRole', 'admin');
+					done();
+				});
+		});
+
 	});
-
-
-	// it('(200 Success) POST /blogPost', done => {
-	// 	chai.request(server)
-	// 		.post('/blogPost')
-	// 		.end((err, res) => {
-	// 			if (err) done(err);
-	// 			console.log(res.body, res.status);
-	// 			assert.equal(res.status, 200);
-	// 			done();
-	// 		});
-	// });
 });

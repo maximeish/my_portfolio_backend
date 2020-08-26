@@ -1,29 +1,29 @@
 [
     {
-        "userToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiYWRtaW5AYXBpLmNvbSIsInBhc3N3b3JkIjoiZXlKaGJHY2lPaUpJVXpJMU5pSjkuZEdWdGNHOXVaUS55d2lBYnhFeUV6NXhYNWQ5a2tTR2lXWDZYeUxCeWI4cjFrQllQRmZEaDhnIiwicm9sZSI6ImFkbWluIiwiZGF0ZV9qb2luZWQiOiIyMDIwLTA4LTI1VDE4OjAxOjQ2Ljc4OFoiLCJpYXQiOjE1OTgzNzg1MDZ9.lhvI6fFxfb8g-39mtSMFdHr-7DNVHJ6-QCMb2vPndq4",
         "id": 1,
+        "userToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiYWRtaW5AYXBpLmNvbSIsInBhc3N3b3JkIjoiZXlKaGJHY2lPaUpJVXpJMU5pSjkuZEdWdGNHOXVaUS55d2lBYnhFeUV6NXhYNWQ5a2tTR2lXWDZYeUxCeWI4cjFrQllQRmZEaDhnIiwicm9sZSI6ImFkbWluIiwiZGF0ZV9qb2luZWQiOiIyMDIwLTA4LTI2VDA2OjUzOjAwLjU2MVoiLCJpYXQiOjE1OTg0MjQ3ODB9.KIwoWR92iZodZeZv9ooc0uJBoNOME1oHCeeZC6n9ZfQ",
         "username": "Admin",
         "email": "admin@api.com",
         "password": "eyJhbGciOiJIUzI1NiJ9.dGVtcG9uZQ.ywiAbxEyEz5xX5d9kkSGiWX6XyLByb8r1kBYPFfDh8g",
         "role": "admin",
-        "date_joined": "2020-08-25T18:01:46.799Z"
+        "date_joined": "2020-08-26T06:53:00.561Z" 
     },
     {
-        "userToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwidXNlcm5hbWUiOiJUZXN0MiIsImVtYWlsIjoidGVzdDJAdHNldC5jb20iLCJwYXNzd29yZCI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmRHVnRjRzl1WlhOa1pnLlVGUUMzUUs5ZlJ2ZHRyc3dzZGQ0Q2dCeUlDdVBBYXBNZ3NRUGZHdmQtWWciLCJyb2xlIjoidXNlciIsImRhdGVfam9pbmVkIjoiMjAyMC0wOC0yNVQxODowNzowMC4yODJaIiwiaWF0IjoxNTk4Mzc4ODIwfQ.IBiRqZH5lpaj81jsaUBLLFSUFk_1SiLdRPfnRfcs46Y",
         "id": 2,
+        "userToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJUZXN0MiIsImVtYWlsIjoidGVzdDJAdHNldC5jb20iLCJwYXNzd29yZCI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmRHVnRjRzl1WlhOa1pnLlVGUUMzUUs5ZlJ2ZHRyc3dzZGQ0Q2dCeUlDdVBBYXBNZ3NRUGZHdmQtWWciLCJyb2xlIjoidXNlciIsImRhdGVfam9pbmVkIjoiMjAyMC0wOC0yNlQwNjo1NzoxOS44NDJaIiwiaWF0IjoxNTk4NDI1MDM5fQ.0Bx-erPvrehgYtT65lxv1Mjf0mX6u9uV2N0dI36lOMs",
         "username": "Test2",
         "email": "test2@tset.com",
         "password": "eyJhbGciOiJIUzI1NiJ9.dGVtcG9uZXNkZg.UFQC3QK9fRvdtrswsdd4CgByICuPAapMgsQPfGvd-Yg",
         "role": "user",
-        "date_joined": "2020-08-25T18:07:00.285Z" 
+        "date_joined": "2020-08-26T06:57:19.842Z"
     },
     {
-        "userToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwidXNlcm5hbWUiOiJUZXN0MyIsImVtYWlsIjoidGVzdDNAdHNldC5jb20iLCJwYXNzd29yZCI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmRHVnRjRzl1WlhOa2N3LjZVNlh2Zm4xa0Rvdnd6NFhVcHlzVmhFZmhIR291Yzl1Tzg5VHNtc3pkSW8iLCJyb2xlIjoidXNlciIsImRhdGVfam9pbmVkIjoiMjAyMC0wOC0yNVQxODoxMjozMS4zODJaIiwiaWF0IjoxNTk4Mzc5MTUxfQ.GhJn-ZkltAvNrQaCBHXtU9rP_zIiwu_-zi91LRbe-cs",
         "id": 3,
+        "userToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcm5hbWUiOiJUZXN0MyIsImVtYWlsIjoidGVzdDNAdHNldC5jb20iLCJwYXNzd29yZCI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmRHVnRjRzl1WlhOa2N3LjZVNlh2Zm4xa0Rvdnd6NFhVcHlzVmhFZmhIR291Yzl1Tzg5VHNtc3pkSW8iLCJyb2xlIjoidXNlciIsImRhdGVfam9pbmVkIjoiMjAyMC0wOC0yNlQwNzowMDoyNi4yMjFaIiwiaWF0IjoxNTk4NDI1MjI2fQ.EuS2hDfhYiuR9XiQ9dS_WfBvoCSz2wkMV8-_LrcfcFQ",
         "username": "Test3",
         "email": "test3@tset.com",
         "password": "eyJhbGciOiJIUzI1NiJ9.dGVtcG9uZXNkcw.6U6Xvfn1kDovwz4XUpysVhEfhHGouc9uO89TsmszdIo",
         "role": "user",
-        "date_joined": "2020-08-25T18:12:31.383Z"
+        "date_joined": "2020-08-26T07:00:26.221Z"
     }
 ]

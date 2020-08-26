@@ -913,13 +913,13 @@ export const getPosts = (req, res) =&gt; {
                 message: "You need to provide a valid token"
             });
 &nbsp;
-        if (authUser.role !== 'admin') 
+        if (authUser.role !== process.env.ADMIN_USER_ROLE) 
             return res.status(403).json({
                 status: "Unauthorized",
                 message: "You are not allowed to view this page"
             });
 &nbsp;
-        else <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser.role === 'admin') {
+        else <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser.role === process.env.ADMIN_USER_ROLE) {
             //Find the comments with a matching id of each post 
             //and add them to the post's comment count
             posts.map(post =&gt; {
@@ -967,7 +967,7 @@ export const getPostById = (req, res) =&gt; {
 &nbsp;
                         <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser) {
                             // User is logged in
-                            if (authUser.role === 'user') {
+                            if (authUser.role === process.env.NORMAL_USER_ROLE) {
                                 for (let post of posts) <span class="missing-if-branch" title="else path not taken" >E</span><span class="missing-if-branch" title="if path not taken" >I</span>{
                                     <span class="missing-if-branch" title="else path not taken" >E</span>if(post.id === postData.id) {
                                         postAvailable = true;
@@ -983,7 +983,7 @@ export const getPostById = (req, res) =&gt; {
                                         return res.status(200).json({
                                             status: 'Success - User logged in',
                                             userToken: usertoken,
-                                            userRole: 'user',
+                                            userRole: process.env.NORMAL_USER_ROLE,
                                             post,
                                             commentsCount: comments.length,
                                             comments                                        
@@ -997,12 +997,12 @@ export const getPostById = (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >                                    return r</span>es.status(404).json({
                                         status: 'Post NOT Found - User logged in',
                                         userToken: usertoken,
-                                        userRole: 'user',
+                                        userRole: process.env.NORMAL_USER_ROLE,
                                         message: "Post with the provided postid NOT found"
                                     });
                             }
 &nbsp;
-                            <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser.role === 'admin') {
+                            <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser.role === process.env.ADMIN_USER_ROLE) {
                                 for (let post of posts) <span class="missing-if-branch" title="else path not taken" >E</span><span class="missing-if-branch" title="if path not taken" >I</span>{
                                     <span class="missing-if-branch" title="else path not taken" >E</span>if(post.id === postData.id) {
                                         postAvailable = true;
@@ -1018,7 +1018,7 @@ export const getPostById = (req, res) =&gt; {
                                         return res.status(200).json({
                                             status: 'Success - Admin user logged in',
                                             userToken: usertoken,
-                                            userRole: 'admin',
+                                            userRole: process.env.ADMIN_USER_ROLE,
                                             post,
                                             commentsCount: comments.length,
                                             comments                                        
@@ -1032,7 +1032,7 @@ export const getPostById = (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >                                    return r</span>es.status(404).json({
                                         status: 'Post NOT Found - Admin user logged in',
                                         userToken: usertoken,
-                                        userRole: 'admin',
+                                        userRole: process.env.ADMIN_USER_ROLE,
                                         message: "Post with the provided postid NOT found"
                                     });
                             }
@@ -1056,7 +1056,7 @@ export const getPostById = (req, res) =&gt; {
                             return res.status(200).json({
                                 status: 'Success - Post Found - User NOT logged in',
                                 userToken: null,
-                                userRole: 'guest',
+                                userRole: process.env.GUEST_USER_ROLE,
                                 post,
                                 commentsCount: comments.length,
                                 comments 
@@ -1071,7 +1071,7 @@ export const getPostById = (req, res) =&gt; {
 <span class="cstat-no" title="statement not covered" >                        return r</span>es.status(404).json({
                             status: 'Post NOT Found - User NOT logged in',
                             userToken: null,
-                            userRole: 'guest',
+                            userRole: process.env.GUEST_USER_ROLE,
                             message: "Post with the provided id NOT found"
                         });
                 }
@@ -1097,14 +1097,14 @@ export const addPost = (req, res) =&gt; {
                 });
             }
 &nbsp;
-            if (authUser.role !== 'admin') {
+            if (authUser.role !== process.env.ADMIN_USER_ROLE) {
                 return res.status(403).json({
                     status: "Unauthorized",
                     message: "You are not allowed to use this feature"
                 });
             }
 &nbsp;
-            <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser.role === 'admin') {
+            <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser.role === process.env.ADMIN_USER_ROLE) {
                 let postsCount = posts.length;
                 let temp = {
                     id: ++postsCount,
@@ -1144,14 +1144,14 @@ export const <span class="fstat-no" title="function not covered" >deletePost </s
                 });
             }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >            if (authUser.role !== 'admin') {</span>
+<span class="cstat-no" title="statement not covered" >            if (authUser.role !== process.env.ADMIN_USER_ROLE) {</span>
 <span class="cstat-no" title="statement not covered" >                return r</span>es.status(403).json({
                     status: "Unauthorized",
                     message: "You are not allowed to use this feature"
                 });
             }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >            if (authUser.role === 'admin') {</span>
+<span class="cstat-no" title="statement not covered" >            if (authUser.role === process.env.ADMIN_USER_ROLE) {</span>
 <span class="cstat-no" title="statement not covered" >                jwt.v</span>erify(posttoken, process.env.SECRET_KEY, <span class="fstat-no" title="function not covered" >(e</span>rr, postData) =&gt; {
 <span class="cstat-no" title="statement not covered" >                    if (err) {</span>
 <span class="cstat-no" title="statement not covered" >                        return r</span>es.status(400).json({
@@ -1204,14 +1204,14 @@ export const <span class="fstat-no" title="function not covered" >updatePost </s
                 });
             };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >            if (authUser.role !== 'admin') {</span>
+<span class="cstat-no" title="statement not covered" >            if (authUser.role !== process.env.ADMIN_USER_ROLE) {</span>
 <span class="cstat-no" title="statement not covered" >                return r</span>es.status(403).json({
                     status: "Unauthorized",
                     message: "You are not allowed to use this feature"
                 });
             }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >            if (authUser.role === 'admin') {</span>
+<span class="cstat-no" title="statement not covered" >            if (authUser.role === process.env.ADMIN_USER_ROLE) {</span>
 <span class="cstat-no" title="statement not covered" >                jwt.v</span>erify(posttoken, process.env.SECRET_KEY, <span class="fstat-no" title="function not covered" >(e</span>rr, postData) =&gt; {
 <span class="cstat-no" title="statement not covered" >                    if (err) {</span>
 <span class="cstat-no" title="statement not covered" >                        return r</span>es.status(400).json({
@@ -1258,7 +1258,7 @@ export const <span class="fstat-no" title="function not covered" >updatePost </s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Tue Aug 25 2020 20:27:53 GMT+0200 (Central European Summer Time)
+                at Wed Aug 26 2020 10:30:01 GMT+0200 (Central European Summer Time)
             </div>
         </div>
         <script src="../../prettify.js"></script>

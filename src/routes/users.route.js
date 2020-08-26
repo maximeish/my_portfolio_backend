@@ -4,18 +4,16 @@ import { getUsers, getUserById, addUser, deleteUser, updateUser } from '../contr
 
 const route = express.Router();
 
-//Verify if it is the admin logged in
-// const verifyToken = 
 
-route.get('/users/:id', (req, res) => getUserById(req, res));
+route.get('/getUser', (req, res) => getUserById(req, res));
 
-route.get('/users', (req, res) => getUsers(req, res));
+route.get('/getUsers', (req, res) => getUsers(req, res));
 
-route.put('/users', (req, res) => updateUser(req, res));
+route.put('/updateUser', (req, res) => updateUser(req, res));
 
-route.post('/users', (req, res) => addUser(req, res));
+route.post('/addUser', (req, res) => addUser(req, res));
 
-route.delete('/users/:id', (req, res) => deleteUser(req, res));
+route.delete('/deleteUser', (req, res) => deleteUser(req, res));
 
 
 export default route;

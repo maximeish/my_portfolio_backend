@@ -20,18 +20,16 @@ export const login = (req, res) => {
     if (email && password) {
         for (let user of users) {
             unHashedPassword = jwt.verify(user.password, process.env.SECRET_KEY);
-            console.log('this was hashed', unHashedPassword)
             if (email === user.email && password === unHashedPassword) {
-                if (user.role === 'user') {
+                if (user.role === process.env.NORMAL_USER_ROLE) {
                     isLoggedin = true;
                     jwt.sign({ username: user.username, email, password, role: user.role }, process.env.SECRET_KEY, (err, token) => {
                         if(token) {
-                            console.log('you are logged in here is your token', token)
                             req.auth = true;
                             req.token = token;
                             return res.status(200).json({ 
                                 status: "Success",
-                                userRole: 'user',
+                                userRole: process.env.NORMAL_USER_ROLE,
                                 token 
                             });
                         }
@@ -44,7 +42,7 @@ export const login = (req, res) => {
                     })
                 }
 
-                if (user.role === 'admin') {
+                if (user.role === process.env.ADMIN_USER_ROLE) {
                     isLoggedin = true;
                     jwt.sign({ username: user.username, email, password, role: user.role }, process.env.SECRET_KEY, (err, token) => {
                         if(token) {
@@ -52,7 +50,7 @@ export const login = (req, res) => {
                             req.token = token;
                             return res.status(200).json({ 
                                 status: "Success",
-                                userRole: 'admin',
+                                userRole: process.env.ADMIN_USER_ROLE,
                                 token 
                             });
                         }
@@ -73,7 +71,6 @@ export const login = (req, res) => {
         })
     }
     
-    console.log('isLoggedin is ', isLoggedin)
     if(!isLoggedin) {
         return res.status(401).json({
             status: 'Unauthorized',

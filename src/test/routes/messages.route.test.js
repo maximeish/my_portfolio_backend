@@ -1,9 +1,25 @@
 import chai, {assert} from 'chai';
 import chaiHttp from 'chai-http';
 import server from '../../index';
+import dotEnv from 'dotenv';
+
+dotEnv.config();
+
+const fakeUsername = process.env.FAKE_USERNAME;
+const fakeUser_Email = process.env.FAKE_USER_EMAIL;
+const fakeUser_Pass = process.env.FAKE_USER_PASS;
+const fakeRole = process.env.FAKE_ROLE;
+
+const normalUser_Email = process.env.NORMAL_USER_EMAIL;
+const normalUser_Pass = process.env.NORMAL_USER_PASS;
+const normalUser_Role = process.env.NORMAL_USER_ROLE;
+
+const adminUser_Email = process.env.ADMIN_EMAIL;
+const adminUser_Pass = process.env.ADMIN_PASS;
+const adminUser_Role = process.env.ADMIN_USER_ROLE;
+
 
 chai.use(chaiHttp);
-
 
 const tokens = {
 	adminToken: null,
@@ -17,8 +33,8 @@ describe("Tests to API Contact form routes", () => {
 		//get admin token by login
 		chai.request(server)
 			.post('/login')
-			.set('email', 'admin@api.com')
-			.set('password', 'tempone')
+			.set('email', adminUser_Email)
+			.set('password', adminUser_Pass)
 			.end((err, res) => {
 				if (err) done(err);
 				tokens.adminToken = res.body.token;
@@ -38,9 +54,9 @@ describe("Tests to API Contact form routes", () => {
 		//get admin token by login
 		chai.request(server)
 			.post('/messages')
-			.set('name', 'test')
-			.set('email', 'user@test.com')
-			.set('telephone', '3895894')
+			.set('name', 'John Doe')
+			.set('email', 'j.doe@example.com')
+			.set('telephone', '393895894')
 			.set('message', 'asdf kljsfd  asdkfj a')
 			.end((err, res) => {
 				if (err) done(err);

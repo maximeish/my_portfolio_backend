@@ -14,7 +14,7 @@ route.post('/signup', async(req, res) => signup(req, res));
 
 route.post('/login', (req, res) => login(req, res));
 
-route.post('/admin', getToken, (req, res) => {
+route.get('/admin', getToken, (req, res) => {
     //check if user is admin or not
         
     let isAdmin = false;

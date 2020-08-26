@@ -1,6 +1,9 @@
 import chai, {assert} from 'chai';
 import chaiHttp from 'chai-http';
 import server from '../../index';
+import dotEnv from 'dotenv';
+
+dotEnv.config();
 
 chai.use(chaiHttp);
 
@@ -11,43 +14,58 @@ const tokens = {
 	postToken: null,
 }
 
+const fakeUsername = process.env.FAKE_USERNAME;
+const fakeUser_Email = process.env.FAKE_USER_EMAIL;
+const fakeUser_Pass = process.env.FAKE_USER_PASS;
+const fakeRole = process.env.FAKE_ROLE;
+
+const normalUser_Email = process.env.NORMAL_USER_EMAIL;
+const normalUser_Pass = process.env.NORMAL_USER_PASS;
+const normalUser_Role = process.env.NORMAL_USER_ROLE;
+
+const guestUser_Role = process.env.GUEST_USER_ROLE;
+
+const adminUser_Email = process.env.ADMIN_EMAIL;
+const adminUser_Pass = process.env.ADMIN_PASS;
+const adminUser_Role = process.env.ADMIN_USER_ROLE;
+
 describe('Tests to API post routes', () => {
 	describe('Tests for retrieving posts from admin page', () => {
 		it('(200 Success) GET /getPosts to get all posts with admin user token', done => {
 			chai.request(server)
 		    	.post('/login')
-		    	.set('email', 'admin@api.com')
-		    	.set('password', 'tempone')
+		    	.set('email', adminUser_Email)
+		    	.set('password', adminUser_Pass)
 		    	.end((err, res) => {
 		    		if (err) done(err);
 		    		tokens.adminToken = res.body.token;
 		    		chai.request(server)
-					.get('/getPosts')
-					.set('usertoken', tokens.adminToken)
-					.end((err, res) => {
-						if (err) done(err);
-						assert.equal(res.status, 200);
-						done();
-					});		
+						.get('/getPosts')
+						.set('usertoken', tokens.adminToken)
+						.end((err, res) => {
+							if (err) done(err);
+							assert.equal(res.status, 200);
+							done();
+						});		
 				});
 		});
 
 		it('(403 Forbidden) GET /getPosts to get all posts with normal user token', done => {
 			chai.request(server)
 		    	.post('/login')
-		    	.set('email', 'test2@tset.com')
-		    	.set('password', 'temponesdf')
+		    	.set('email', normalUser_Email)
+		    	.set('password', normalUser_Pass)
 		    	.end((err, res) => {
 		    		if (err) done(err);
 		    		tokens.normalUserToken = res.body.token;
 		    		chai.request(server)
-					.get('/getPosts')
-					.set('usertoken', tokens.normalUserToken)
-					.end((err, res) => {
-						if (err) done(err);
-						assert.equal(res.status, 403);
-						done();
-					});		
+						.get('/getPosts')
+						.set('usertoken', tokens.normalUserToken)
+						.end((err, res) => {
+							if (err) done(err);
+							assert.equal(res.status, 403);
+							done();
+						});		
 				});
 		});
 
@@ -181,7 +199,7 @@ describe('Tests to API post routes', () => {
 						.end((err, res) => {
 							if (err) done(err);
 							assert.equal(res.status, 200);
-							assert.deepPropertyVal(res.body, 'userRole', 'guest');
+							assert.deepPropertyVal(res.body, 'userRole', guestUser_Role);
 							done();
 						});
 				})
@@ -217,7 +235,7 @@ describe('Tests to API post routes', () => {
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);
-					assert.deepPropertyVal(res.body, 'userRole', 'user');
+					assert.deepPropertyVal(res.body, 'userRole', normalUser_Role);
 					done();
 				});
 		});
@@ -266,7 +284,7 @@ describe('Tests to API post routes', () => {
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);
-					assert.deepPropertyVal(res.body, 'userRole', 'admin');
+					assert.deepPropertyVal(res.body, 'userRole', adminUser_Role);
 					done();
 				});
 		});

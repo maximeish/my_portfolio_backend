@@ -58,13 +58,13 @@ export const getPosts = (req, res) => {
                 message: "You need to provide a valid token"
             });
 
-        if (authUser.role !== 'admin') 
+        if (authUser.role !== process.env.ADMIN_USER_ROLE) 
             return res.status(403).json({
                 status: "Unauthorized",
                 message: "You are not allowed to view this page"
             });
 
-        else if (authUser.role === 'admin') {
+        else if (authUser.role === process.env.ADMIN_USER_ROLE) {
             //Find the comments with a matching id of each post 
             //and add them to the post's comment count
             posts.map(post => {
@@ -112,7 +112,7 @@ export const getPostById = (req, res) => {
 
                         if (authUser) {
                             // User is logged in
-                            if (authUser.role === 'user') {
+                            if (authUser.role === process.env.NORMAL_USER_ROLE) {
                                 for (let post of posts) {
                                     if(post.id === postData.id) {
                                         postAvailable = true;
@@ -128,7 +128,7 @@ export const getPostById = (req, res) => {
                                         return res.status(200).json({
                                             status: 'Success - User logged in',
                                             userToken: usertoken,
-                                            userRole: 'user',
+                                            userRole: process.env.NORMAL_USER_ROLE,
                                             post,
                                             commentsCount: comments.length,
                                             comments                                        
@@ -142,12 +142,12 @@ export const getPostById = (req, res) => {
                                     return res.status(404).json({
                                         status: 'Post NOT Found - User logged in',
                                         userToken: usertoken,
-                                        userRole: 'user',
+                                        userRole: process.env.NORMAL_USER_ROLE,
                                         message: "Post with the provided postid NOT found"
                                     });
                             }
 
-                            if (authUser.role === 'admin') {
+                            if (authUser.role === process.env.ADMIN_USER_ROLE) {
                                 for (let post of posts) {
                                     if(post.id === postData.id) {
                                         postAvailable = true;
@@ -163,7 +163,7 @@ export const getPostById = (req, res) => {
                                         return res.status(200).json({
                                             status: 'Success - Admin user logged in',
                                             userToken: usertoken,
-                                            userRole: 'admin',
+                                            userRole: process.env.ADMIN_USER_ROLE,
                                             post,
                                             commentsCount: comments.length,
                                             comments                                        
@@ -177,7 +177,7 @@ export const getPostById = (req, res) => {
                                     return res.status(404).json({
                                         status: 'Post NOT Found - Admin user logged in',
                                         userToken: usertoken,
-                                        userRole: 'admin',
+                                        userRole: process.env.ADMIN_USER_ROLE,
                                         message: "Post with the provided postid NOT found"
                                     });
                             }
@@ -201,7 +201,7 @@ export const getPostById = (req, res) => {
                             return res.status(200).json({
                                 status: 'Success - Post Found - User NOT logged in',
                                 userToken: null,
-                                userRole: 'guest',
+                                userRole: process.env.GUEST_USER_ROLE,
                                 post,
                                 commentsCount: comments.length,
                                 comments 
@@ -216,7 +216,7 @@ export const getPostById = (req, res) => {
                         return res.status(404).json({
                             status: 'Post NOT Found - User NOT logged in',
                             userToken: null,
-                            userRole: 'guest',
+                            userRole: process.env.GUEST_USER_ROLE,
                             message: "Post with the provided id NOT found"
                         });
                 }
@@ -242,14 +242,14 @@ export const addPost = (req, res) => {
                 });
             }
 
-            if (authUser.role !== 'admin') {
+            if (authUser.role !== process.env.ADMIN_USER_ROLE) {
                 return res.status(403).json({
                     status: "Unauthorized",
                     message: "You are not allowed to use this feature"
                 });
             }
 
-            if (authUser.role === 'admin') {
+            if (authUser.role === process.env.ADMIN_USER_ROLE) {
                 let postsCount = posts.length;
                 let temp = {
                     id: ++postsCount,
@@ -289,14 +289,14 @@ export const deletePost = (req, res) => {
                 });
             }
 
-            if (authUser.role !== 'admin') {
+            if (authUser.role !== process.env.ADMIN_USER_ROLE) {
                 return res.status(403).json({
                     status: "Unauthorized",
                     message: "You are not allowed to use this feature"
                 });
             }
 
-            if (authUser.role === 'admin') {
+            if (authUser.role === process.env.ADMIN_USER_ROLE) {
                 jwt.verify(posttoken, process.env.SECRET_KEY, (err, postData) => {
                     if (err) {
                         return res.status(400).json({
@@ -349,14 +349,14 @@ export const updatePost = (req, res) => {
                 });
             };
 
-            if (authUser.role !== 'admin') {
+            if (authUser.role !== process.env.ADMIN_USER_ROLE) {
                 return res.status(403).json({
                     status: "Unauthorized",
                     message: "You are not allowed to use this feature"
                 });
             }
 
-            if (authUser.role === 'admin') {
+            if (authUser.role === process.env.ADMIN_USER_ROLE) {
                 jwt.verify(posttoken, process.env.SECRET_KEY, (err, postData) => {
                     if (err) {
                         return res.status(400).json({

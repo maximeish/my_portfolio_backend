@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.68% </span>
+                <span class="strong">18.55% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/124</span>
+                <span class='fraction'>23/124</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">8.79% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/91</span>
+                <span class='fraction'>8/91</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">15.38% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>2/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">10.38% </span>
+                <span class="strong">20.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/106</span>
+                <span class='fraction'>22/106</span>
             </div>
         
             
@@ -366,29 +366,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -397,7 +395,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -659,28 +659,28 @@ for (let user of userData) {
     users.push(user);
 }
 &nbsp;
-export const <span class="fstat-no" title="function not covered" >getUsers </span>= (req, res) =&gt; {
-    const { usertoken } = <span class="cstat-no" title="statement not covered" >req.headers;</span>
+export const getUsers = (req, res) =&gt; {
+    const { usertoken } = req.headers;
     
-<span class="cstat-no" title="statement not covered" >    if (usertoken) {</span>
-<span class="cstat-no" title="statement not covered" >        jwt.v</span>erify(usertoken, process.env.SECRET_KEY, <span class="fstat-no" title="function not covered" >(e</span>rr, authUser) =&gt; {
-<span class="cstat-no" title="statement not covered" >            if (err) {</span>
-<span class="cstat-no" title="statement not covered" >                return r</span>es.status(403).json({
+    if (usertoken) {
+        jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) =&gt; {
+            if (err) {
+                return res.status(403).json({
                     status: "Unauthorized",
                     message: "You are not allowed to use this feature due to invalid token"
                 });
             };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >            if (authUser) {</span>
-<span class="cstat-no" title="statement not covered" >                if (authUser.role !== process.env.ADMIN_USER_ROLE) {</span>
-<span class="cstat-no" title="statement not covered" >                    return r</span>es.status(403).json({
+            <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser) {
+                if (authUser.role !== process.env.ADMIN_USER_ROLE) {
+                    return res.status(403).json({
                         status: "Unauthorized",
                         message: "You are not allowed to use this feature"
                     });
                 };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >                if (authUser.role === process.env.ADMIN_USER_ROLE) {</span>
-<span class="cstat-no" title="statement not covered" >                    return r</span>es.status(200).json({
+                <span class="missing-if-branch" title="else path not taken" >E</span>if (authUser.role === process.env.ADMIN_USER_ROLE) {
+                    return res.status(200).json({
                         status: "Success",
                         usersCount: users.length,
                         users
@@ -691,7 +691,7 @@ export const <span class="fstat-no" title="function not covered" >getUsers </spa
     }
 &nbsp;
     else {
-<span class="cstat-no" title="statement not covered" >        return r</span>es.status(403).json({
+        return res.status(403).json({
             status: "Unauthorized",
             message: "You are not allowed to use this feature"
         });
@@ -946,7 +946,7 @@ export const <span class="fstat-no" title="function not covered" >updateUser </s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Wed Aug 26 2020 10:30:01 GMT+0200 (Central European Summer Time)
+                at Wed Aug 26 2020 11:44:35 GMT+0200 (Central European Summer Time)
             </div>
         </div>
         <script src="../../prettify.js"></script>

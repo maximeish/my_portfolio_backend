@@ -1,10 +1,9 @@
 import userData from '../models/user-data.json';
 import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
+const User = require('../models/users');
 
 dotEnv.config();
-
-// Assign each user a unique id
 
 let users = [];
 
@@ -74,39 +73,81 @@ export const getUserById = (req, res) => {
                 }
 
                 if (authUser.role === process.env.ADMIN_USER_ROLE) {
-                    console.log('admin token legit', authUser);
+
                     if (usertoken) {
-                        jwt.verify(usertoken, process.env.SECRET_KEY, (err, userData) => {
-                            if (err) {
-                                return res.status(403).json({
-                                    status: "Unauthorized",
-                                    message: "You are not allowed to use this feature due to invalid token"
+
+                        User.findById(usertoken)
+                            .then(doc => {
+                                if (doc) {
+                                    return res.status(200).json({
+                                        status: "Success",
+                                        user: doc
+                                    });
+                                } else {
+                                    return res.status(404).json({
+                                        status: "Not Found",
+                                        message: "Cannot find a user with that token"
+                                    });
+                                };
+                            })
+                            .catch(err => {
+                                return res.status(500).json({
+                                    Error: err
                                 });
-                            }
-
-                            if (userData) {
-                                console.log('user token legit', userData)
-                                for (let user of users) {
-                                    if(user.id === userData.id) {
-                                        console.log('we found em')
-                                        return res.status(200).json({
-                                            status: "Success",
-                                            user
-                                        });
-                                        
-                                        reqUser = true;
-
-                                        break;
-                                    };  
-                                }             
-                            };
-                        });
-                        
-                        if (!reqUser) 
-                            return res.status(404).json({
-                                status: "Not Found",
-                                message: "User with the provided id not found"
                             });
+
+                        // jwt.verify(usertoken, process.env.SECRET_KEY, (err, userData) => {
+                        //     if (err) {
+                        //         return res.status(403).json({
+                        //             status: "Unauthorized",
+                        //             message: "You are not allowed to use this feature due to invalid token"
+                        //         });
+                        //     }
+
+                        //     if (userData) {
+
+                        //         User.findById(userToken)
+                        //             .exec
+                        //             .then(doc => {
+                        //                 reqUser = true;
+                        //                 if (doc) {
+                        //                     return res.status(200).json({
+                        //                         status: "Success",
+                        //                         user: doc
+                        //                     })
+                        //                 } else {
+                        //                     return res.status(404).json({
+                        //                         status: "Not Found",
+                        //                         message: "Cannot find a user with the provided token"
+                        //                     });
+                        //                 }
+                        //             })
+                        //             .catch(err => {
+                        //                 return res.status(500).json({
+                        //                     Error: err
+                        //                 });
+                        //             })
+
+                        //         // for (let user of users) {
+                        //         //     if(user.id === userData.id) {
+                        //         //         return res.status(200).json({
+                        //         //             status: "Success",
+                        //         //             user
+                        //         //         });
+                                        
+                        //         //         reqUser = true;
+
+                        //         //         break;
+                        //         //     };  
+                        //         // }             
+                        //     };
+                        // });
+                        
+                        // if (!reqUser) 
+                        //     return res.status(404).json({
+                        //         status: "Not Found",
+                        //         message: "User with the provided id not found"
+                        //     });
                     } else {
                         return res.status(400).json({
                             status: "Bad Request",

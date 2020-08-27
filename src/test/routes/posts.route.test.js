@@ -1,3 +1,5 @@
+//reconfigured
+
 import chai, {assert} from 'chai';
 import chaiHttp from 'chai-http';
 import server from '../../index';
@@ -11,7 +13,6 @@ const tokens = {
 	adminToken: null,
 	normalUserToken: null,
 	commentToken: null,
-	postToken: null,
 }
 
 const fakeUsername = process.env.FAKE_USERNAME;
@@ -93,12 +94,14 @@ describe('Tests to API post routes', () => {
 
 
 	describe('Tests for Adding Posts from admin page', () => {
-		it('(200 Success) POST /addPost to add a post with (admin token, title, paragraphs)', done => {
+		it('(200 Success) POST /addPost to add a post with (admin token, title, body)', done => {
 			chai.request(server)
 				.post('/addPost')
 				.set('usertoken', tokens.adminToken)
-				.set('title', 'Dummy Post')
-				.set('paragraphs', '<p>Dummy</p> <br/> <p>paragraphs</p>')
+				.send({
+					title: 'Dummy Post',
+					body: '<p>Dummy</p> <br/> <p>body</p>'
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);
@@ -106,11 +109,13 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(400 Bad Request) POST /addPost to add a post as admin but with missing title (admin token, paragraphs)', done => {
+		it('(400 Bad Request) POST /addPost to add a post as admin but with missing title (admin token, body)', done => {
 			chai.request(server)
 				.post('/addPost')
 				.set('usertoken', tokens.adminToken)
-				.set('paragraphs', '<p>Dummy</p> <br/> <p>paragraphs</p>')
+				.send({
+					body: '<p>Dummy</p> <br/> <p>body</p>'
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 400);
@@ -119,11 +124,13 @@ describe('Tests to API post routes', () => {
 		});
 
 
-		it('(400 Bad Request) POST /addPost to add a post as admin but with missing paragraphs (admin token, title)', done => {
+		it('(400 Bad Request) POST /addPost to add a post as admin but with missing body (admin token, title)', done => {
 			chai.request(server)
 				.post('/addPost')
 				.set('usertoken', tokens.adminToken)
-				.set('title', 'Dummy Post')
+				.send({
+					title: 'Dummy Post'
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 400);
@@ -132,7 +139,7 @@ describe('Tests to API post routes', () => {
 		});
 
 
-		it('(400 Bad Request) POST /addPost to add a post as admin but with missing title and paragraphs (admin token)', done => {
+		it('(400 Bad Request) POST /addPost to add a post as admin but with missing title and body (admin token)', done => {
 			chai.request(server)
 				.post('/addPost')
 				.set('usertoken', tokens.adminToken)
@@ -144,12 +151,14 @@ describe('Tests to API post routes', () => {
 		});
 
 
-		it('(403 Forbidden) POST /addPost to add a post with (normal user token, title, paragraphs)', done => {
+		it('(403 Forbidden) POST /addPost to add a post with (normal user token, title, body)', done => {
 			chai.request(server)
 				.post('/addPost')
 				.set('usertoken', tokens.normalUserToken)
-				.set('title', 'Dummy Post')
-				.set('paragraphs', '<p>Dummy</p> <br/> <p>paragraphs</p>')
+				.send({
+					title: 'Dummy Post',
+					body: '<p>Dummy</p> <br/> <p>body</p>'
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 403);
@@ -158,11 +167,13 @@ describe('Tests to API post routes', () => {
 		});	
 
 
-		it('(400 Bad Request) POST /addPost to add a post with missing usertoken (title, paragraphs)', done => {
+		it('(400 Bad Request) POST /addPost to add a post with missing usertoken (title, body)', done => {
 			chai.request(server)
 				.post('/addPost')
-				.set('title', 'Dummy Post')
-				.set('paragraphs', '<p>Dummy</p> <br/> <p>paragraphs</p>')
+				.send({
+					title: 'Dummy Post',
+					body: '<p>Dummy</p> <br/> <p>body</p>'
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 400);
@@ -170,12 +181,14 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(403 Unauthorized) POST /addPost to add a post with invalid usertoken (usertoken, title, paragraphs)', done => {
+		it('(403 Unauthorized) POST /addPost to add a post with invalid usertoken (usertoken, title, body)', done => {
 			chai.request(server)
 				.post('/addPost')
 				.set('usertoken', 'ksdjfkldjsafks')
-				.set('title', 'Dummy Post')
-				.set('paragraphs', '<p>Dummy</p> <br/> <p>paragraphs</p>')
+				.send({
+					title: 'Dummy Post',
+					body: '<p>Dummy</p> <br/> <p>body</p>'
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 403);
@@ -186,26 +199,21 @@ describe('Tests to API post routes', () => {
 
 
 	describe('Tests for retrieving posts from the blog page', () => {
-		it('(200 Success) GET /blogPost to get a blog post using its posttoken as a not logged in user (post token)', done => {
+		it('(200 Success) GET /blogPost to get a blog post using its postid as a not logged in user (postid)', done => {
 			chai.request(server)
-				.get('/getPosts')
-				.set('usertoken', tokens.adminToken)
+				.get('/blogPost')
+				.send({
+					postid: 1
+				})
 				.end((err, res) => {
 					if (err) done(err);
-					tokens.postToken = res.body.posts[0].postToken;
-					chai.request(server)
-						.get('/blogPost')
-						.set('posttoken', tokens.postToken)
-						.end((err, res) => {
-							if (err) done(err);
-							assert.equal(res.status, 200);
-							assert.deepPropertyVal(res.body, 'userRole', guestUser_Role);
-							done();
-						});
-				})
+					assert.equal(res.status, 200);
+					assert.deepPropertyVal(res.body, 'userRole', guestUser_Role);
+					done();
+				});
 		});
 
-		it('(400 Bad Request) GET /blogPost to get a blog post without the posttoken as a not logged in user', done => {
+		it('(400 Bad Request) GET /blogPost to get a blog post without the postid as a not logged in user', done => {
 			chai.request(server)
 				.get('/blogPost')
 				.end((err, res) => {
@@ -215,36 +223,44 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(404 Not Found) GET /blogPost to get a blog post with an invalid posttoken as a not logged in user', done => {
+		it('(404 Not Found) GET /blogPost to get a blog post with an invalid postid as a not logged in user (postid)', done => {
 			chai.request(server)
 				.get('/blogPost')
-				.set('posttoken', 'kasdfjkldfjakldsf')
+				.send({
+					postid: 85034
+				})
 				.end((err, res) => {
 					if (err) done(err);
+					console.log(res.body, res.status)
 					assert.equal(res.status, 404);
 					done();
 				});
 		});
 
 
-		it('(200 Success) GET /blogPost to get a blog post using its posttoken as a logged in normal user (usertoken, posttoken)', done => {
+		it('(200 Success) GET /blogPost to get a blog post using its postid as a logged in normal user (usertoken, postid)', done => {
 			chai.request(server)
 				.get('/blogPost')
 				.set('usertoken', tokens.normalUserToken)
-				.set('posttoken', tokens.postToken)
+				.send({
+					postid: 2
+				})
 				.end((err, res) => {
 					if (err) done(err);
+					console.log(res.body, res.status)
 					assert.equal(res.status, 200);
 					assert.deepPropertyVal(res.body, 'userRole', normalUser_Role);
 					done();
 				});
 		});
 
-		it('(400 Bad Request) GET /blogPost to get a blog post using its posttoken but with an invalid usertoken (usertoken, posttoken)', done => {
+		it('(400 Bad Request) GET /blogPost to get a blog post using its valid postid but with an invalid usertoken (usertoken, postid)', done => {
 			chai.request(server)
 				.get('/blogPost')
 				.set('usertoken', 'askdfjadwfjal')
-				.set('posttoken', tokens.postToken)
+				.send({
+					postid: 2
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 400);
@@ -252,11 +268,13 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(404 Not Found) GET /blogPost to get a blog post using an invalid posttoken but with a valid normal usertoken (usertoken, posttoken)', done => {
+		it('(404 Not Found) GET /blogPost to get a blog post using an invalid postid but with a valid normal usertoken (usertoken, postid)', done => {
 			chai.request(server)
 				.get('/blogPost')
 				.set('usertoken', tokens.normalUserToken)
-				.set('posttoken', 'aksdjfkdjfsakl')
+				.send({
+					postid: 289798
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 404);
@@ -264,23 +282,28 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(404 Not Found) GET /blogPost to get a blog post using an invalid posttoken with also an invalid usertoken (usertoken, posttoken)', done => {
+		it('(404 Not Found) GET /blogPost to get a blog post using an invalid postid with also an invalid usertoken (usertoken, postid)', done => {
 			chai.request(server)
 				.get('/blogPost')
 				.set('usertoken', 'ksjdfkladfjkldfjk')
-				.set('posttoken', 'aksdjfkdjfsakl')
+				.send({
+					postid: 4323432
+				})
 				.end((err, res) => {
 					if (err) done(err);
+					console.log(res.body, res.status)
 					assert.equal(res.status, 404);
 					done();
 				});
 		});
 
-		it('(200 Success) GET /blogPost to get a blog post using its posttoken as a logged in admin user (usertoken, posttoken)', done => {
+		it('(200 Success) GET /blogPost to get a blog post using its postid as a logged in admin user (usertoken, postid)', done => {
 			chai.request(server)
 				.get('/blogPost')
 				.set('usertoken', tokens.adminToken)
-				.set('posttoken', tokens.postToken)
+				.send({
+					postid: 3
+				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);

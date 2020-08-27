@@ -4,7 +4,7 @@ import { getComments, getCommentById, addComment, deleteComment, updateComment }
 
 const route = express.Router();
 
-route.get('/comments/:id', (req, res) => getCommentById(req, res));
+// route.get('/comments/:id', (req, res) => getCommentById(req, res));
 
 route.get('/comments', (req, res) => getComments(req, res));
 

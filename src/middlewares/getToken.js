@@ -8,12 +8,11 @@ dotEnv.config();
 //and pass it to the next /admin middleware to verify
 //if user is admin or not
 export const getToken = (req, res, nextMiddleware) => {
-    //get the auth token from the header
-    let bearerToken;
-    if(req.headers['authorization']) {
+    //get the auth token from the headers
+    let { usertoken } = req.headers;
+    if(usertoken) {
         //Save the token to req.token and call nextMiddleware() to pass a modified req
-        bearerToken = req.headers['authorization'].split(' ')[1];
-        req.token = bearerToken;
+        req.token = usertoken;
         nextMiddleware();
     }
     else {

@@ -1,4 +1,3 @@
-import commentData from '../models/comment-data.json';
 import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
 import mongoose from 'mongoose';
@@ -6,43 +5,6 @@ const Post = require('../models/posts');
 
 dotEnv.config();
 
-// Sign and save each comment as a token
-
-// let comments = [];
-
-// for (let comment of commentData) {
-//     jwt.sign(comment, process.env.SECRET_KEY, (err, token) => {
-//         if (err)
-//             return res.status(501).json({
-//                 status: 'Internal Server Error',
-//                 message: 'Cannot generate token for each comment'
-//             });
-//         if (token) {
-//             comment = {commentToken: token, ...comment};
-//             comments.push(comment);
-//         }
-//     });
-// }
-
-// export const getComments = (req, res) => {
-//     res.status(200).json(comments);
-// }
-
-// export const getCommentById = (req, res) => {
-//     let reqComment;
-    
-//     comments.forEach(comment => {
-//         if(comment.id === req.params.id) {
-//             res.status(200).json(comment);
-//             reqComment = true;
-//         }
-//     })
-    
-//     if (!reqComment) res.status(404).json({
-//         status: 404,
-//         message: "Error: Comment with the provided id not found"
-//     });
-// }
 
 export const addComment = (req, res) => {
     const { usertoken } = req.headers;
@@ -89,37 +51,6 @@ export const addComment = (req, res) => {
                         }
                     }
                 )
-
-
-                // let commentsCount = comments.length;
-                
-                // const temp = {
-                //     commentid: ++commentsCount,
-                //     username: authUser.username,
-                //     user_comment: comment_text,
-                //     date_posted: new Date(),
-                //     likes: 0,
-                //     postid: postData.id
-                // };
-
-                // //Sign and save the comment's token in the comment
-                // jwt.sign(temp, process.env.SECRET_KEY, (err, commentToken) => {
-                //     if (err) {
-                //         return res.status(501).json({
-                //             status: 'Internal Server Error',
-                //             message: "Cannot sign the comment to get its token"
-                //         });
-                //     };
-
-                //     if (commentToken) {
-                //         comments.push({ commentToken, ...temp });
-                        
-                //         return res.status(200).json({
-                //             status: 'Success',
-                //             message: "Comment posted successfully"
-                //         });
-                //     };
-                // });
             }
         });
     } else {
@@ -195,44 +126,51 @@ export const updateComment = (req, res) => {
                     Post.findOne({'_id': postid, 'comments._id': commentid})
                         .exec()
                         .then(comment => {
-                            currentLikes = comment.likes;
-                            currentLikedUsers = comment.users_liked;
-                            if (!currentLikedUsers.includes(authUser.username)) {
-                                Post.update({ "_id": postid, "comments._id": commentid },
-                                    {
-                                        $set: {"comments.$.likes": ++currentLikes},
-                                        $push: {"comments.$.users_liked": authUser.username}
-                                    })
-                                    .exec()
-                                    .then(result => {
-                                        return res.status(200).json({
-                                            status: "Success (+1 like)",
-                                            message: result
+                            if (comment) {
+                                currentLikes = comment.likes;
+                                currentLikedUsers = comment.users_liked;
+                                if (!currentLikedUsers.includes(authUser.username)) {
+                                    Post.update({ "_id": postid, "comments._id": commentid },
+                                        {
+                                            $set: {"comments.$.likes": ++currentLikes},
+                                            $push: {"comments.$.users_liked": authUser.username}
                                         })
-                                    })
-                                    .catch(err => {
-                                        return res.status(500).json({
-                                            Error: err
+                                        .exec()
+                                        .then(result => {
+                                            return res.status(200).json({
+                                                status: "Success (+1 like)",
+                                                message: result
+                                            })
                                         })
-                                    })
+                                        .catch(err => {
+                                            return res.status(500).json({
+                                                Error: err
+                                            })
+                                        })
+                                } else {
+                                    Post.update({ "_id": postid, "comments._id": commentid },
+                                        {
+                                            $set: {"comments.$.likes": --currentLikes},
+                                            $pull: {"comments.$.users_liked": authUser.username}
+                                        })
+                                        .exec()
+                                        .then(result => {
+                                            return res.status(200).json({
+                                                status: "Success (-1 like)",
+                                                message: result
+                                            })
+                                        })
+                                        .catch(err => {
+                                            return res.status(500).json({
+                                                Error: err
+                                            })
+                                        })
+                                }
                             } else {
-                                Post.update({ "_id": postid, "comments._id": commentid },
-                                    {
-                                        $set: {"comments.$.likes": --currentLikes},
-                                        $pull: {"comments.$.users_liked": authUser.username}
-                                    })
-                                    .exec()
-                                    .then(result => {
-                                        return res.status(200).json({
-                                            status: "Success (-1 like)",
-                                            message: result
-                                        })
-                                    })
-                                    .catch(err => {
-                                        return res.status(500).json({
-                                            Error: err
-                                        })
-                                    })
+                                return res.status(404).json({
+                                    status: "Not Found",
+                                    message: "Cannot find a comment with the provided id"
+                                });
                             }
                         })
                         .catch(err => {

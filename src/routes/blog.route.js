@@ -12,24 +12,6 @@ dotEnv.config();
 
 const route = express.Router();
 
-// Assign each post a unique id
-
-let posts = [];
-
-for (let post of postData) {
-    post = { id: uniqid('postid-'), ...post };
-    jwt.sign(post, process.env.SECRET_KEY, (err, token) => {
-    	if (err)
-    		return res.status(501).json({
-    			status: 'Internal Server Error',
-    			message: 'Cannot generate token for each post'
-    		});
-    	if (token) {
-    		post = {postToken: token, ...post};
-    		posts.push(post);
-    	}
-    });
-};
 
 route.get('/blog', getToken, displayPreviews);
 

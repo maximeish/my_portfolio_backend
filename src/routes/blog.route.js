@@ -1,8 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
 import express from 'express';
-import postData from '../models/post-data.json';
-import uniqid from 'uniqid';
 import { displayPreviews, getPostById } from '../controllers/blog.controller';
 import { getToken } from '../middlewares/getToken';
 

@@ -17,7 +17,7 @@ export const displayPreviews = (req, res) => {
     Post.find()
         .sort({ _id: -1 })
         .limit(postsLimit)
-        .exec((err, result) => {
+        .exec((err, previewPosts) => {
             if (err) {
                 return res.status(500).json({
                     status: "Server Error",
@@ -25,35 +25,34 @@ export const displayPreviews = (req, res) => {
                 })
             }
 
-            if (result.length !== 0) {
-                previewPosts = result;
-                    jwt.verify(req.token, process.env.SECRET_KEY, (err, authUser) => {
-                        if (err) {
-                            return res.status(200).json({
-                                status: 'Success - user not logged in',
-                                role: process.env.GUEST_USER_ROLE,
-                                userToken: null,
-                                previewPosts
-                            });
-                        }
+            if (previewPosts.length !== 0) {
+                jwt.verify(req.token, process.env.SECRET_KEY, (err, authUser) => {
+                    if (err) {
+                        return res.status(200).json({
+                            status: 'Success - user not logged in',
+                            role: process.env.GUEST_USER_ROLE,
+                            userToken: null,
+                            previewPosts
+                        });
+                    }
 
-                        if (authUser.role === process.env.ADMIN_USER_ROLE) {
-                            return res.status(200).json({
-                                status: 'Success',
-                                role: process.env.ADMIN_USER_ROLE,
-                                userToken: req.token || null,
-                                previewPosts
-                            });
-                        }
+                    if (authUser.role === process.env.ADMIN_USER_ROLE) {
+                        return res.status(200).json({
+                            status: 'Success',
+                            role: process.env.ADMIN_USER_ROLE,
+                            userToken: req.token || null,
+                            previewPosts
+                        });
+                    }
 
-                        if (authUser.role === process.env.NORMAL_USER_ROLE) {
-                            return res.status(200).json({
-                                status: 'Success',
-                                role: process.env.NORMAL_USER_ROLE,
-                                userToken: req.token || null,
-                                previewPosts
-                            });
-                        }
+                    if (authUser.role === process.env.NORMAL_USER_ROLE) {
+                        return res.status(200).json({
+                            status: 'Success',
+                            role: process.env.NORMAL_USER_ROLE,
+                            userToken: req.token || null,
+                            previewPosts
+                        });
+                    }
                 });
             } else {
                 return res.status(200).json({
@@ -84,9 +83,7 @@ export const getPostById = (req, res) => {
                                     status: 'Success - Post Found - User NOT logged in',
                                     userToken: null,
                                     userRole: process.env.GUEST_USER_ROLE,
-                                    post: doc,
-                                    commentsCount: doc.comments.length,
-                                    postid: doc._id
+                                    post: doc
                                 });
                             }
 
@@ -97,9 +94,7 @@ export const getPostById = (req, res) => {
                                         status: 'Success - User logged in',
                                         userToken: usertoken,
                                         userRole: process.env.NORMAL_USER_ROLE,
-                                        post: doc,
-                                        commentsCount: doc.comments.length,
-                                        postid: doc._id
+                                        post: doc
                                     });
                                 }
 
@@ -108,9 +103,7 @@ export const getPostById = (req, res) => {
                                         status: 'Success - Admin user logged in',
                                         userToken: usertoken,
                                         userRole: process.env.ADMIN_USER_ROLE,
-                                        post: doc,
-                                        commentsCount: doc.comments.length,
-                                        postid: doc._id
+                                        post: doc
                                     });
                                 }
                             }
@@ -122,9 +115,7 @@ export const getPostById = (req, res) => {
                             status: 'Success - Post Found - User NOT logged in',
                             userToken: null,
                             userRole: process.env.GUEST_USER_ROLE,
-                            post: doc,
-                            commentsCount: doc.comments.length,
-                            postid: doc._id
+                            post: doc
                         });
                     }
                 } else {

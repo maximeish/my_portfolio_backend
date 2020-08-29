@@ -110,27 +110,7 @@ export const deleteComment = (req, res) => {
                                         status: "comment successfully deleted",
                                         message: result
                                     })
-                                })
-
-                            // Post.findOneAndDelete({'comments': {$elemMatch: {_id: commentid, username: authUser.username}}}, function (err, result) {
-                            //     if (err) {
-                            //         return res.status(500).json({
-                            //             Error: err
-                            //         });
-                            //     }    
-
-                            //     if (result) {
-                            //         return res.status(200).json({
-                            //             status: "Deleted successfully",
-                            //             message: result
-                            //         });
-                            //     } else {
-                            //         return res.status(400).json({
-                            //             status: "Not Found or Invalid User",
-                            //             message: "Cannot find a comment with the provided id or you are not allowed to delete this comment"
-                            //         });
-                            //     }
-                            // });
+                                });
                         } else {
                             return res.status(404).json({
                                 status: "Not Found",
@@ -170,53 +150,64 @@ export const updateComment = (req, res) => {
             if (authUser) {
                 let currentLikes, currentLikedUsers = [];
                 if (likes) {
-                    Post.findOne({ "_id": postid, "comments._id": commentid})
+                    Post.findById(postid)
                         .exec()
-                        .then(comment => {
-                            if (comment) {
-                                currentLikes = comment.likes;
-                                currentLikedUsers = comment.users_liked;
-                                if (!currentLikedUsers.includes(authUser.username)) {
-                                    Post.update({ "_id": postid, "comments._id": commentid },
-                                        {
-                                            $set: {"comments.$.likes": ++currentLikes},
-                                            $push: {"comments.$.users_liked": authUser.username}
-                                        })
-                                        .exec()
-                                        .then(result => {
-                                            return res.status(200).json({
-                                                status: "Success (+1 like)",
-                                                message: result
-                                            })
-                                        })
-                                        .catch(err => {
-                                            return res.status(500).json({
-                                                Error: err
-                                            })
-                                        })
-                                } else {
-                                    Post.update({ "_id": postid, "comments._id": commentid },
-                                        {
-                                            $set: {"comments.$.likes": --currentLikes},
-                                            $pull: {"comments.$.users_liked": authUser.username}
-                                        })
-                                        .exec()
-                                        .then(result => {
-                                            return res.status(200).json({
-                                                status: "Success (-1 like)",
-                                                message: result
-                                            })
-                                        })
-                                        .catch(err => {
-                                            return res.status(500).json({
-                                                Error: err
-                                            })
-                                        })
+                        .then(post => {
+                            if (post) {
+                                let updated = false;
+                                for(let [index, comment] of post.comments.entries()) {
+                                    if (comment._id.toString() === commentid.toString()) {
+                                        let currentLikes = post.comments[index].likes;
+                                        let currentLikedUsers = post.comments[index].users_liked;
+                                        if (!currentLikedUsers.includes(authUser.username)) {
+                                            post.comments[index].likes += 1;
+                                            post.comments[index].users_liked.push(authUser.username);
+                                            post.save()
+                                                .then(result => {
+                                                    return res.status(200).json({
+                                                        status: "Success. Likes (+1)",
+                                                        message: result
+                                                    })
+                                                })
+                                                .catch(err => {
+                                                    return res.status(500).json({
+                                                        Error: err
+                                                    })
+                                                })
+                                        } else {
+                                            post.comments[index].likes -= 1;
+                                            post.comments[index].users_liked.splice(post.comments[index].users_liked.indexOf(authUser.username), 1);
+                                            post.save()
+                                                .then(result => {
+                                                    return res.status(200).json({
+                                                        status: "Success. Likes (-1)",
+                                                        message: result
+                                                    })
+                                                })
+                                                .catch(err => {
+                                                    return res.status(500).json({
+                                                        Error: err
+                                                    })
+                                                })
+                                        }
+
+                                        updated = true;
+                                        
+                                        break;
+                                    }
                                 }
-                            } else {
+
+                                if (!updated) {
+                                    return res.status(404).json({
+                                        status: "Not Found",
+                                        message: "Cannot find a comment with the provided id"
+                                    })
+                                }
+                            }
+                            else {
                                 return res.status(404).json({
                                     status: "Not Found",
-                                    message: "Cannot find a comment with the provided id"
+                                    message: "Cannot find a post with the provided id"
                                 });
                             }
                         })
@@ -228,37 +219,60 @@ export const updateComment = (req, res) => {
                 }
 
                 if (comment_text) {
-                    Post.findOne({"comments._id": commentid})
+                    Post.findById(postid)
                         .exec()
-                        .then(comment => {
-                            console.log(comment);
-                            if (comment.username === authUser.username) {
-                                Post.update({ "_id": postid, "comments._id": commentid },
-                                {
-                                    $set: {"comments.$.comment_text": comment_text, "comments.$.date_posted": new Date()}
-                                })
-                                .exec()
-                                .then(result => {
-                                    return res.status(200).json({
-                                        status: "Success",
-                                        message: "Comment updated successfully"
-                                    });
-                                })
-                                .catch(err => {
-                                    return res.status(500).json({
-                                        Error: err
+                        .then(post => {
+                            if (post) {
+                                let updated = false;
+                                for(let [index, comment] of post.comments.entries()) {
+                                    if (comment._id.toString() === commentid.toString()) {
+                                        if (comment.username.toString() === authUser.username.toString()) {
+                                            post.comments[index].user_comment = comment_text;
+                                            post.comments[index].date_posted = new Date();
+                                            post.save()
+                                                .then(message => {
+                                                    return res.status(200).json({
+                                                        status: "Comment modified",
+                                                        message
+                                                    })
+                                                })
+                                                .catch(err => {
+                                                    return res.status(500).json({
+                                                        Error: err
+                                                    })
+                                                })
+                                            
+                                            updated = true;
+                                            
+                                            break;
+                                        }
+                                        else {
+                                            return res.status(403).json({
+                                                status: "Unauthorized",
+                                                message: "You are not authorized to edit this comment"
+                                            });
+                                        }
+                                    }
+                                }
+
+                                if (!updated) {
+                                    return res.status(404).json({
+                                        status: "Not Found",
+                                        message: "Cannot find a comment with the provided id"
                                     })
-                                });
+                                }
                             } else {
-                                return res.status(403).json({
-                                    status: "Unauthorized",
-                                    message: "You are not authorized to edit this comment"
-                                });
+                                return res.status(404).json({
+                                    status: "Not Found",
+                                    message: "Post with the provided id not found"
+                                })
                             }
                         })
                         .catch(err => {
-                            Error: err
-                        });
+                            return res.status(500).json({
+                                Error: err
+                            })
+                        })
                 }
             };
         });

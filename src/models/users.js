@@ -7,6 +7,7 @@ const userSchema = mongoose.Schema({
 	email: String,
 	password: String,
 	role: String,
+	subscribed: String,
 	date_joined: String
 });
 

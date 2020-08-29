@@ -11,7 +11,8 @@ import mongoose from 'mongoose';
 
 mongoose.connect(`mongodb+srv://admin-user:${process.env.MONGO_ATLAS_PWD}@blogdata-cluster.9zb8m.mongodb.net/<dbname>?retryWrites=true&w=majority`, {
 	useNewUrlParser: true,
-	useUnifiedTopology: true
+	useUnifiedTopology: true,
+    useFindAndModify: false
 });
 
 const app = express();

@@ -174,7 +174,6 @@ export const updatePost = (req, res) => {
             }
 
             if (authUser.role === process.env.ADMIN_USER_ROLE) {
-                console.log('postid', postid)
                 Post.find({_id: postid}, (err, post) => {
                     if (err) {
                         return res.status(500).json({
@@ -184,10 +183,9 @@ export const updatePost = (req, res) => {
                     }
 
                     if (post) {
-                        console.log('before updating vars', post.title, post.body, post.author)
-                        title = title || post.title;
-                        body = body || 'post.body';
-                        author = author || 'post.author';
+                        title = title || post[0].title;
+                        body = body || post[0].body;
+                        author = author || post[0].author;
                         
                         Post.updateOne({ _id: postid }, { $set: { title, body, author } })
                             .exec()
@@ -210,40 +208,6 @@ export const updatePost = (req, res) => {
                         })
                     }
                 });
-                    // .exec()
-                    // .then(post => {
-                    //     if (post) {
-                    //         title = title || post.title;
-                    //         body = body || post.body;
-                    //         author = author || post.author;
-                            
-                    //         Post.update({ _id: postid }, { $set: { title, body, author } })
-                    //             .exec()
-                    //             .then(result => {
-                    //                 return res.status(200).json({
-                    //                     status: "Post updated successfully",
-                    //                     message: result
-                    //                 })
-                    //             })
-                    //             .catch(err => {
-                    //                 return res.status(500).json({
-                    //                     status: "Post.update",
-                    //                     Error: err
-                    //                 })
-                    //             })
-                    //     } else {
-                    //         return res.status(404).json({
-                    //             status: "Not Found",
-                    //             message: "Cannot find the post with the provided id"
-                    //         })
-                    //     }
-                    // })
-                    // .catch(err => {
-                    //     return res.status(500).json({
-                    //         status: "Post.findById",
-                    //         Error: err
-                    //     })
-                    // })
             }
         });
     } else res.status(400).json({

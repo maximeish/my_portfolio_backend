@@ -23,34 +23,50 @@ export const addComment = (req, res) => {
 
             if (authUser) {
                 //Save comment in the database
-                Post.findByIdAndUpdate(
-                    postid,
-                    { 
-                         "$push":  {"comments":  {
-                            _id: new mongoose.Types.ObjectId(),
-                            username: authUser.username,
-                            user_comment: comment_text,
-                            date_posted: new Date(),
-                            likes: 0,
-                            users_liked: []
-                         }},
-                    },
-                    {"new": true, "upsert": true},
-                    (err, doc) => {
-                        if (err) {
-                            return res.status(500).json({
-                                Error: err
-                            })
-                        }
+                Post.findById(postid)
+                    .exec()
+                    .then(post => {
+                        if (post) {
+                            Post.findByIdAndUpdate(
+                                postid,
+                                { 
+                                     "$push":  {"comments":  {
+                                        _id: new mongoose.Types.ObjectId(),
+                                        username: authUser.username,
+                                        user_comment: comment_text,
+                                        date_posted: new Date(),
+                                        likes: 0,
+                                        users_liked: []
+                                     }},
+                                },
+                                {"new": true, "upsert": true},
+                                (err, doc) => {
+                                    if (err) {
+                                        return res.status(500).json({
+                                            Error: err
+                                        })
+                                    }
 
-                        if (doc) {
-                            return res.status(200).json({
-                                status: "Success",
-                                post: doc
+                                    if (doc) {
+                                        return res.status(200).json({
+                                            status: "Comment added successfully",
+                                            post: doc
+                                        })
+                                    }
+                                }
+                            );
+                        } else {
+                            return res.status(404).json({
+                                status: "Not Found",
+                                message: "Cannot find a post with the provided id"
                             })
                         }
-                    }
-                )
+                    })
+                    .catch(err => {
+                        return res.status(500).json({
+                            Error: err
+                        })
+                    })
             }
         });
     } else {
@@ -63,10 +79,10 @@ export const addComment = (req, res) => {
 
 export const deleteComment = (req, res) => {
     const { usertoken } = req.headers;
-    const { commentid } = req.body;
+    const { postid, commentid } = req.body;
     
     //check if user token is provided
-    if (usertoken && commentid) {
+    if (postid && usertoken && commentid) {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
@@ -76,31 +92,63 @@ export const deleteComment = (req, res) => {
             }
 
             if (authUser) {
-                Post.findOneAndDelete({'comments': {$elemMatch: {_id: commentid, username: authUser.username}}}, function (err, result) {
-                    if (err) {
+                Post.findById(postid)
+                    .exec()
+                    .then(post => {
+                        if (post) {
+                            Post.findByIdAndUpdate(
+                                postid, { $pull: {"comments": {_id: commentid,  username: authUser.username} } },
+                                { safe: true, upsert: true },
+                                (err, result) => {
+                                    if (err) {
+                                        return res.status(500).json({
+                                            Error: err
+                                        })
+                                    }
+
+                                    return res.status(200).json({
+                                        status: "comment successfully deleted",
+                                        message: result
+                                    })
+                                })
+
+                            // Post.findOneAndDelete({'comments': {$elemMatch: {_id: commentid, username: authUser.username}}}, function (err, result) {
+                            //     if (err) {
+                            //         return res.status(500).json({
+                            //             Error: err
+                            //         });
+                            //     }    
+
+                            //     if (result) {
+                            //         return res.status(200).json({
+                            //             status: "Deleted successfully",
+                            //             message: result
+                            //         });
+                            //     } else {
+                            //         return res.status(400).json({
+                            //             status: "Not Found or Invalid User",
+                            //             message: "Cannot find a comment with the provided id or you are not allowed to delete this comment"
+                            //         });
+                            //     }
+                            // });
+                        } else {
+                            return res.status(404).json({
+                                status: "Not Found",
+                                message: "Post with the provided id not found"
+                            })
+                        }
+                    })
+                    .catch(err => {
                         return res.status(500).json({
                             Error: err
-                        });
-                    }    
-
-                    if (result) {
-                        return res.status(200).json({
-                            status: "Deleted successfully",
-                            message: result
-                        });
-                    } else {
-                        return res.status(400).json({
-                            status: "Not Found or Invalid User",
-                            message: "Cannot find a comment with the provided id or you are not allowed to delete this comment"
-                        });
-                    }
-                });
+                        })
+                    })
             }
         });
     } else {
         return res.status(400).json({
             status: 'Bad Request',
-            message: 'You need to provide a user token and commentid'
+            message: 'You need to provide a user token, postid and commentid'
         });
     }
 }
@@ -120,10 +168,9 @@ export const updateComment = (req, res) => {
             };
 
             if (authUser) {
-                //check if comment token is provided
                 let currentLikes, currentLikedUsers = [];
                 if (likes) {
-                    Post.findOne({'_id': postid, 'comments._id': commentid})
+                    Post.findOne({ "_id": postid, "comments._id": commentid})
                         .exec()
                         .then(comment => {
                             if (comment) {
@@ -181,9 +228,10 @@ export const updateComment = (req, res) => {
                 }
 
                 if (comment_text) {
-                    Post.findOne({'_id': postid, 'comments._id': commentid})
+                    Post.findOne({"comments._id": commentid})
                         .exec()
                         .then(comment => {
+                            console.log(comment);
                             if (comment.username === authUser.username) {
                                 Post.update({ "_id": postid, "comments._id": commentid },
                                 {

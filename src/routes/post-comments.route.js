@@ -1,12 +1,9 @@
 import express from 'express';
-import { getComments, getCommentById, addComment, deleteComment, updateComment } from '../controllers/comments.controller';
+import { addComment, deleteComment, updateComment } from '../controllers/comments.controller';
 
 
 const route = express.Router();
 
-route.get('/comments/:id', (req, res) => getCommentById(req, res));
-
-route.get('/comments', (req, res) => getComments(req, res));
 
 route.post('/addComment', (req, res) => addComment(req, res));
 

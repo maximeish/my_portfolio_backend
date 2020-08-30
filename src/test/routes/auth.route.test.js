@@ -5,6 +5,14 @@ import dotEnv from 'dotenv';
 
 dotEnv.config();
 
+const tokens = {
+    adminToken: null,
+    normalUserToken: null,
+    commentToken: null,
+    postToken: null,
+}
+
+
 const fakeUsername = process.env.FAKE_USERNAME;
 const fakeUser_Email = process.env.FAKE_USER_EMAIL;
 const fakeUser_Pass = process.env.FAKE_USER_PASS;
@@ -28,27 +36,36 @@ describe("Tests to API auth routes", () => {
         it('(200 Success) user SIGN UP by POST to /signup and get token', done => {
             chai.request(server)
                 .post('/signup')
-                .set('username', fakeUsername)
-                .set('email', fakeUser_Email)
-                .set('password', fakeUser_Pass)
-                .set('role', normalUser_Role)
+                .send({
+                    username: fakeUsername,
+                    email: fakeUser_Email,
+                    password: fakeUser_Pass,
+                    role: normalUser_Role,
+                    subscribed: 'no'
+                })
                 .end((err, res) => {
                     if (err) done(err);
                     assert.equal(res.status, 200);
                     assert.deepPropertyVal(res.body, 'userRole', normalUser_Role);
+                    assert.isDefined(res.body.userToken);
+                    tokens.normalUserToken = res.body.userToken;
                     done();
-                });
+                })
         });
 
         it('(400 Bad Request) user SIGN UP by POST to /signup without supplying a role', done => {
             chai.request(server)
                 .post('/signup')
-                .set('username', fakeUsername)
-                .set('email', fakeUser_Email)
-                .set('password', fakeUser_Pass)
+                .send({
+                    username: fakeUsername,
+                    email: fakeUser_Email,
+                    password: fakeUser_Pass,
+                    subscribed: "no"
+                })
                 .end((err, res) => {
                     if (err) done(err);
                     assert.equal(res.status, 400);
+                    assert.deepPropertyVal(res.body, 'message', 'Please, provide all details for a user (username, email, password, role) and make sure subscribed is yes or no');
                     done();
                 });
         });
@@ -56,13 +73,17 @@ describe("Tests to API auth routes", () => {
         it('(400 Bad Request) normal user SIGN UP by POST to /signup by supplying an invalid role', done => {
             chai.request(server)
                 .post('/signup')
-                .set('username', fakeUsername)
-                .set('email', fakeUser_Email)
-                .set('password', fakeUser_Pass)
-                .set('role', fakeRole)
+                .send({
+                    username: fakeUsername,
+                    email: fakeUser_Email,
+                    password: fakeUser_Pass,
+                    role: 'ksjdfklsf',
+                    subscribed: 'no'
+                })
                 .end((err, res) => {
                     if (err) done(err);
                     assert.equal(res.status, 400);
+                    assert.deepPropertyVal(res.body, 'message', 'Invalid role. Should be admin or user')
                     done();
                 });
         });
@@ -73,12 +94,15 @@ describe("Tests to API auth routes", () => {
         it('(200 Success) normal user LOGIN by POST to /login and get token', done => {
             chai.request(server)
                 .post('/login')
-                .set('email', normalUser_Email)
-                .set('password', normalUser_Pass)
+                .send({
+                    email: normalUser_Email,
+                    password: normalUser_Pass
+                })
                 .end((err, res) => {
                     if(err) done(err);
                     assert.equal(res.status, 200);
                     assert.deepPropertyVal(res.body, 'userRole', normalUser_Role);
+                    assert.isDefined(res.body.userToken);
                     done();
                 });
         });
@@ -86,11 +110,14 @@ describe("Tests to API auth routes", () => {
         it('(401 Unauthorized) user LOGIN by POST to /login with invalid credentials', done => {
             chai.request(server)
                 .post('/login')
-                .set('email', 'user@example.com')
-                .set('password', 'Password123')
+                .send({
+                    email: "sldj@sdkfj.dslfj",
+                    password: "sdkfjsdkAsdfjk"
+                })
                 .end((err, res) => {
                     if(err) done(err);
                     assert.equal(res.status, 401);
+                    assert.deepPropertyVal(res.body, 'status', 'User not found or invalid login credentials');
                     done();
                 });
         });
@@ -98,7 +125,9 @@ describe("Tests to API auth routes", () => {
         it('(400 Bad Request) user LOGIN by POST to /login with missing credentials', done => {
             chai.request(server)
                 .post('/login')
-                .set('email', normalUser_Email)
+                .send({
+                    email: normalUser_Email
+                })
                 .end((err, res) => {
                     if(err) done(err);
                     assert.equal(res.status, 400);
@@ -109,8 +138,10 @@ describe("Tests to API auth routes", () => {
         it('(200 Success) admin LOGIN by POST to /login and get token', done => {
             chai.request(server)
                 .post('/login')
-                .set('email', adminUser_Email)
-                .set('password', adminUser_Pass)
+                .send({
+                    email: adminUser_Email,
+                    password: adminUser_Pass
+                })
                 .end((err, res) => {
                     if (err) done(err);
                     assert.equal(res.status, 200);
@@ -128,28 +159,20 @@ describe("Tests to API auth routes", () => {
                 .end((err, res) => {
                     if (err) done(err);
                     assert.equal(res.status, 403);
+                    assert.deepPropertyVal(res.body, 'status', 'Forbidden')
                     done();
                 });
         });
 
-        //sign a dummy user up and get a valid token to GET /admin
         it('(403 Forbidden) GET /admin with a token but NOT admin user', done => {
             chai.request(server)
-                .post('/signup')
-                .set('username', fakeUsername)
-                .set('email', fakeUser_Email)
-                .set('password', fakeUser_Pass)
-                .set('role', normalUser_Role)
+                .get('/admin')
+                .set('usertoken', tokens.normalUserToken)
                 .end((err, res) => {
                     if (err) done(err);
-                    chai.request(server)
-                        .get('/admin')
-                        .set('authorization', `Bearer ${res.body.token}`)
-                        .end((err, res) => {
-                            if (err) done(err);
-                            assert.equal(res.status, 403);
-                            done();
-                        })
+                    assert.equal(res.status, 403);
+                    assert.deepPropertyVal(res.body, 'status', 'Unauthorized');
+                    done();
                 })
         });
 
@@ -157,16 +180,20 @@ describe("Tests to API auth routes", () => {
         it('(200 Success) GET /admin with a token as admin user', done => {
             chai.request(server)
                 .post('/login')
-                .set('email', adminUser_Email)
-                .set('password', adminUser_Pass)
+                .send({
+                    email: adminUser_Email,
+                    password: adminUser_Pass
+                })
                 .end((err, res) => {
                     if (err) done(err);
+                    tokens.adminToken = res.body.userToken;
                     chai.request(server)
                         .get('/admin')
-                        .set('authorization', `Bearer ${res.body.token}`)
+                        .set('usertoken', tokens.adminToken)
                         .end((err, res) => {
                             if (err) done(err);
                             assert.equal(res.status, 200);
+                            assert.deepPropertyVal(res.body, 'status', 'Success');
                             done();
                         });
                 });

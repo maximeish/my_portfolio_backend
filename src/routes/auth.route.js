@@ -21,19 +21,22 @@ route.get('/admin', getToken, (req, res) => {
 
     jwt.verify(req.token, process.env.SECRET_KEY, (err, authUser) => {
         if (err) 
-            res.status(403).json({
+            return res.status(403).json({
                 status: "Forbidden",
-                message: "You are not allowed to view this page"
+                message: "You are not allowed to view this page due to invalid token"
             }) 
-        else if (authUser.role !== 'admin')
-            res.status(403).json({
-                message: "You are not allowed to view this page",
-                authUser
+        
+        if (authUser.role !== process.env.ADMIN_USER_ROLE)
+            return res.status(403).json({
+                status: "Unauthorized",
+                message: "You are not allowed to view this page"
             });
-        else
-            res.status(200).json({
+        
+        if (authUser.role === process.env.ADMIN_USER_ROLE)
+            return res.status(200).json({
                 status: 'Success',
-                message: 'Welcome admin'
+                message: 'Welcome admin',
+                userToken: req.token
             });
     });
 });

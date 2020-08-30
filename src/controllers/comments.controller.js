@@ -1,195 +1,144 @@
-import commentData from '../models/comment-data.json';
-import uniqid from 'uniqid';
 import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
+import mongoose from 'mongoose';
+const Post = require('../models/posts');
 
 dotEnv.config();
 
-// Sign and save each comment as a token
-
-let comments = [];
-
-for (let comment of commentData) {
-    jwt.sign(comment, process.env.SECRET_KEY, (err, token) => {
-        if (err)
-            return res.status(501).json({
-                status: 'Internal Server Error',
-                message: 'Cannot generate token for each comment'
-            });
-        if (token) {
-            comment = {commentToken: token, ...comment};
-            comments.push(comment);
-        }
-    });
-}
-
-export const getComments = (req, res) => {
-    res.status(200).json(comments);
-}
-
-export const getCommentById = (req, res) => {
-    let reqComment;
-    
-    comments.forEach(comment => {
-        if(comment.id === req.params.id) {
-            res.status(200).json(comment);
-            reqComment = true;
-        }
-    })
-    
-    if (!reqComment) res.status(404).json({
-        status: 404,
-        message: "Error: Comment with the provided id not found"
-    });
-}
 
 export const addComment = (req, res) => {
-    const { usertoken, comment_text, posttoken } = req.headers;
+    const { usertoken } = req.headers;
+    const { postid, comment_text } = req.body;
     
     //check if post token is provided
-    if (posttoken) {
-        jwt.verify(posttoken, process.env.SECRET_KEY, (err, postData) => {
+    if (postid && usertoken && comment_text) {
+        //check if user token is provided
+        jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
-                    status: "Unauthorized to comment",
-                    message: "You are not allowed to comment due to invalid token"
+                    status: 'Unauthorized',
+                    message: "You are not authorized to comment due to invalid usertoken"
                 });
-            };
+            }
 
-            if (postData) {
-                //check if user token is provided
-                if (usertoken) {
-                    jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
-                        if (err) {
-                            return res.status(403).json({
-                                status: 'Unauthorized',
-                                message: "You are not authorized to comment due to invalid token"
-                            });
-                        }
-
-                        if (authUser) {
-                            if (comment_text) {
-                                //Save comment in the database
-                                let commentsCount = comments.length;
-                                
-                                const temp = {
-                                    commentid: ++commentsCount,
-                                    username: authUser.username,
-                                    user_comment: comment_text,
-                                    date_posted: new Date(),
-                                    likes: 0,
-                                    postid: postData.id
-                                };
-
-                                //Sign and save the comment's token in the comment
-                                jwt.sign(temp, process.env.SECRET_KEY, (err, commentToken) => {
+            if (authUser) {
+                //Save comment in the database
+                Post.findById(postid)
+                    .exec()
+                    .then(post => {
+                        if (post) {
+                            Post.findByIdAndUpdate(
+                                postid,
+                                { 
+                                     "$push":  {"comments":  {
+                                        _id: new mongoose.Types.ObjectId(),
+                                        username: authUser.username,
+                                        user_comment: comment_text,
+                                        date_posted: new Date(),
+                                        likes: 0,
+                                        users_liked: []
+                                     }},
+                                },
+                                {"new": true, "upsert": true},
+                                (err, doc) => {
                                     if (err) {
-                                        return res.status(501).json({
-                                            status: 'Internal Server Error',
-                                            message: "Cannot sign the comment to get its token"
-                                        });
-                                    };
+                                        return res.status(500).json({
+                                            Error: err
+                                        })
+                                    }
 
-                                    if (commentToken) {
-                                        comments.push({ commentToken, ...temp });
-                                        
+                                    if (doc) {
                                         return res.status(200).json({
-                                            status: 'Success',
-                                            message: "Comment posted successfully"
-                                        });
-                                    };
-                                });
-                            } else {
-                                return res.status(400).json({
-                                    status: 'Bad Request',
-                                    message: 'You need to provide the comment_text'
-                                });
-                            }
+                                            status: "Comment added successfully",
+                                            post: doc
+                                        })
+                                    }
+                                }
+                            );
+                        } else {
+                            return res.status(404).json({
+                                status: "Not Found",
+                                message: "Cannot find a post with the provided id"
+                            })
                         }
-                    });
-                } else {
-                    return res.status(403).json({
-                        status: 'Unauthorized to comment',
-                        message: 'You are not authorized to comment as you are not logged in'
-                    });
-                };
-            };
+                    })
+                    .catch(err => {
+                        return res.status(500).json({
+                            Error: err
+                        })
+                    })
+            }
         });
     } else {
         return res.status(400).json({
             status: 'Bad Request',
-            message: 'You need to provide a post token'
+            message: 'You need to provide a postid, a usertoken, and comment_text'
         });
     };
 };
 
 export const deleteComment = (req, res) => {
-    let deleted = false;
-    const { usertoken, commenttoken } = req.headers;
+    const { usertoken } = req.headers;
+    const { postid, commentid } = req.body;
     
     //check if user token is provided
-    if (usertoken) {
+    if (postid && usertoken && commentid) {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
                     status: "Unauthorized to delete comment",
                     message: "You are not allowed to delete a comment due to invalid user token"
                 });
-            };
+            }
 
             if (authUser) {
-                //check if comment token is provided
-                if (commenttoken) {
-                    jwt.verify(commenttoken, process.env.SECRET_KEY, (err, commentData) => {
-                        if (err) {
-                            return res.status(403).json({
-                                status: 'Unauthorized',
-                                message: "You are not authorized to delete due to invalid comment token"
-                            });
-                        }
+                Post.findById(postid)
+                    .exec()
+                    .then(post => {
+                        if (post) {
+                            Post.findByIdAndUpdate(
+                                postid, { $pull: {"comments": {_id: commentid,  username: authUser.username} } },
+                                { safe: true, upsert: true },
+                                (err, result) => {
+                                    if (err) {
+                                        return res.status(500).json({
+                                            Error: err
+                                        })
+                                    }
 
-                        if (commentData) {
-                            for (let [index, comment] of comments.entries()) {
-                                if (comment.commentid === commentData.commentid && comment.username === authUser.username) {
-                                    comments.splice(index, 1);
-                                    deleted = true;
                                     return res.status(200).json({
-                                        status: "Success",
-                                        message: "Comment successfully deleted"
-                                    });
-                                };
-                            };
-                        };
-
-                        if (!deleted) {
-                            return res.status(400).json({
-                                status: "Bad Request",
-                                message: "Cannot find the comment with the provided id"
+                                        status: "comment successfully deleted",
+                                        message: result
+                                    })
+                                });
+                        } else {
+                            return res.status(404).json({
+                                status: "Not Found",
+                                message: "Post with the provided id not found"
                             })
                         }
-                    });
-                } else {
-                    return res.status(403).json({
-                        status: 'Unauthorized to delete comment',
-                        message: 'Cannot delete comment. You need to supply the comment token'
-                    });
-                };
-            };
+                    })
+                    .catch(err => {
+                        return res.status(500).json({
+                            Error: err
+                        })
+                    })
+            }
         });
     } else {
         return res.status(400).json({
             status: 'Bad Request',
-            message: 'You need to provide a user token'
+            message: 'You need to provide a user token, postid and commentid'
         });
-    };
+    }
 }
 
 export const updateComment = (req, res) => {
     let updated = false;
-    const { usertoken, commenttoken, likes, comment_text } = req.headers;
-    
+    const { usertoken } = req.headers;
+    const { postid, commentid, likes, comment_text } = req.body;
     //check if user token is provided
-    if (usertoken) {
+    if (usertoken && commentid && postid && (likes || comment_text)) {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
@@ -199,92 +148,137 @@ export const updateComment = (req, res) => {
             };
 
             if (authUser) {
-                //check if comment token is provided
-                if (commenttoken) {
-                    jwt.verify(commenttoken, process.env.SECRET_KEY, (err, commentData) => {
-                        if (err) {
-                            return res.status(403).json({
-                                status: 'Unauthorized',
-                                message: "Due to invalid comment token you are not allowed to update the comment"
-                            });
-                        }
-
-                        if (commentData) {
-                            //search the comment with the provided id and checks if the username of user who commented it is the same
-                            //as the user who is logged in and update its text
-                            let index = 0;
-                            for (let comment of comments) {
-                                if (comment.commentid === commentData.commentid && comment.username === authUser.username) {
-                                    if(likes || comment_text) {
-                                        if (likes) {
-                                            if (comment.user_liked.includes(authUser.username)) {
-                                                comments[index].likes -= 1;
-                                                comments[index].user_liked.splice(comments[index].user_liked.indexOf(authUser.username), 1);
-                                            } else {
-                                                comments[index].likes += 1;
-                                                comments[index].user_liked.push(authUser.username);
-                                            }
-                                        }
-                                        if (comment_text) {
-                                            comments[index].date_posted = new Date();
-                                            comments[index].user_comment = comment_text;
+                let currentLikes, currentLikedUsers = [];
+                if (likes) {
+                    Post.findById(postid)
+                        .exec()
+                        .then(post => {
+                            if (post) {
+                                let updated = false;
+                                for(let [index, comment] of post.comments.entries()) {
+                                    if (comment._id.toString() === commentid.toString()) {
+                                        let currentLikes = post.comments[index].likes;
+                                        let currentLikedUsers = post.comments[index].users_liked;
+                                        if (!currentLikedUsers.includes(authUser.username)) {
+                                            post.comments[index].likes += 1;
+                                            post.comments[index].users_liked.push(authUser.username);
+                                            post.save()
+                                                .then(result => {
+                                                    return res.status(200).json({
+                                                        status: "Success. Likes (+1)",
+                                                        message: result
+                                                    })
+                                                })
+                                                .catch(err => {
+                                                    return res.status(500).json({
+                                                        Error: err
+                                                    })
+                                                })
+                                        } else {
+                                            post.comments[index].likes -= 1;
+                                            post.comments[index].users_liked.splice(post.comments[index].users_liked.indexOf(authUser.username), 1);
+                                            post.save()
+                                                .then(result => {
+                                                    return res.status(200).json({
+                                                        status: "Success. Likes (-1)",
+                                                        message: result
+                                                    })
+                                                })
+                                                .catch(err => {
+                                                    return res.status(500).json({
+                                                        Error: err
+                                                    })
+                                                })
                                         }
 
                                         updated = true;
-                                        return res.status(200).json({
-                                            status: "Success",
-                                            message: "Comment successfully updated"
-                                        });
-
+                                        
                                         break;
                                     }
-                                };
-                                ++index;
-                            }
+                                }
 
-                            for(let [index, comment] of comments.entries()) {
-                                //search the comment with the provided id and checks if the user is logged in
-                                //and update the comment's likes
-                                if (likes && comment.id === commentData.id && comment.username !== authUser.username) {
-                                    if (comment.user_liked.includes(authUser.username)) {
-                                        comments[index].likes -= 1;
-                                        comments[index].user_liked.splice(comments[index].user_liked.indexOf(authUser.username), 1);
-                                        updated = true;
-                                        return res.status(200).json({
-                                            status: "Success",
-                                            message: "Comment successfully updated (-1 like)"
-                                        });
-                                    } else {
-                                        comments[index].likes += 1;
-                                        comments[index].user_liked.push(authUser.username);
-                                        updated = true;
-                                        return res.status(200).json({
-                                            status: "Success",
-                                            message: "Comment successfully updated (+1 like)"
-                                        });
+                                if (!updated) {
+                                    return res.status(404).json({
+                                        status: "Not Found",
+                                        message: "Cannot find a comment with the provided id"
+                                    })
+                                }
+                            }
+                            else {
+                                return res.status(404).json({
+                                    status: "Not Found",
+                                    message: "Cannot find a post with the provided id"
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            return res.status(500).json({
+                                Error: err
+                            })
+                        });
+                }
+
+                if (comment_text) {
+                    Post.findById(postid)
+                        .exec()
+                        .then(post => {
+                            if (post) {
+                                let updated = false;
+                                for(let [index, comment] of post.comments.entries()) {
+                                    if (comment._id.toString() === commentid.toString()) {
+                                        if (comment.username.toString() === authUser.username.toString()) {
+                                            post.comments[index].user_comment = comment_text;
+                                            post.comments[index].date_posted = new Date();
+                                            post.save()
+                                                .then(message => {
+                                                    return res.status(200).json({
+                                                        status: "Comment modified",
+                                                        message
+                                                    })
+                                                })
+                                                .catch(err => {
+                                                    return res.status(500).json({
+                                                        Error: err
+                                                    })
+                                                })
+                                            
+                                            updated = true;
+                                            
+                                            break;
+                                        }
+                                        else {
+                                            return res.status(403).json({
+                                                status: "Unauthorized",
+                                                message: "You are not authorized to edit this comment"
+                                            });
+                                        }
                                     }
+                                }
 
-                                    break;
-                                };
+                                if (!updated) {
+                                    return res.status(404).json({
+                                        status: "Not Found",
+                                        message: "Cannot find a comment with the provided id"
+                                    })
+                                }
+                            } else {
+                                return res.status(404).json({
+                                    status: "Not Found",
+                                    message: "Post with the provided id not found"
+                                })
                             }
-                        };
-
-                        if (!updated) 
-                            return res.status(400).json({
-                                status: "Bad Request",
-                                message: "You need to update at least the comment_text or like the comment"
-                            });
-                    });
-                } else 
-                    return res.status(400).json({
-                        status: 'Bad Request',
-                        message: 'You need to supply the comment token of the comment'
-                    });
+                        })
+                        .catch(err => {
+                            return res.status(500).json({
+                                Error: err
+                            })
+                        })
+                }
             };
         });
     } else
         return res.status(400).json({
             status: 'Bad Request',
-            message: 'You need to provide a user token'
+            message: 'You need to provide a user token, commentid, postid and update at least the comment_text or likes'
         });
 }

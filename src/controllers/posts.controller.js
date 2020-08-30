@@ -1,243 +1,66 @@
-import postData from '../models/post-data.json';
-import userData from '../models/user-data.json';
-import postCommentsData from '../models/comment-data.json';
 import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
+import mongoose from 'mongoose';
+const Post = require('../models/posts');
 
 dotEnv.config();
-
-let posts = [], users = [];
-
-// Sign and save each post token and add comments to each post
-for (let post of postData) {
-    jwt.sign(post, process.env.SECRET_KEY, (err, token) => {
-        if (err)
-            return res.status(501).json({
-                status: 'Internal Server Error',
-                message: 'Cannot generate token for each post'
-            });
-        if (token) {
-            post = {postToken: token, ...post};
-            posts.push(post);
-        }
-    });
-
-    //Find the comments with a matching id of each post 
-    //and add them to the post's comment count
-    posts.map(post => {
-        postCommentsData.forEach(comment => {
-            if (post.id === comment.postid) {
-                post.comments += 1;
-            };
-        });
-    });
-}
-
-// Sign and save each user token
-for (let user of userData) {
-    jwt.sign(user, process.env.SECRET_KEY, (err, token) => {
-        if (err)
-            return res.status(501).json({
-                status: 'Internal Server Error',
-                message: 'Cannot generate token for each user'
-            });
-        if (token) {
-            user = {userToken: token, ...user};
-            users.push(user);
-        }
-    });
-}
 
 export const getPosts = (req, res) => {
     const { usertoken } = req.headers;
 
-    jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
-        if (err)
-            return res.status(403).json({
-                status: "Unauthorized",
-                message: "You need to provide a valid token"
-            });
-
-        if (authUser.role !== process.env.ADMIN_USER_ROLE) 
-            return res.status(403).json({
-                status: "Unauthorized",
-                message: "You are not allowed to view this page"
-            });
-
-        else if (authUser.role === process.env.ADMIN_USER_ROLE) {
-            //Find the comments with a matching id of each post 
-            //and add them to the post's comment count
-            posts.map(post => {
-                postCommentsData.forEach(comment => {
-                    if (post.id === comment.postid) {
-                        post.comments += 1;
-                    };
+    if(usertoken) {
+        jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
+            if (err)
+                return res.status(403).json({
+                    status: "Forbidden",
+                    message: "You need to provide a valid token"
                 });
-            });
 
-
-            return res.status(200).json({
-                status: "Success",
-                count: posts.length,
-                posts
-            });
-        }
-    })
-}
-
-export const getPostById = (req, res) => {    
-    let { posttoken, usertoken } = req.headers, postAvailable = false;
-
-    if (posttoken) {
-        jwt.verify(posttoken, process.env.SECRET_KEY, (err, postData) => {
-            if (err) {
-                res.status(404).json({
-                    status: 'Not Found',
-                    message: 'Cannot find a post with the provided token. You need to supply a VALID post token'
+            if (authUser.role !== process.env.ADMIN_USER_ROLE) 
+                return res.status(403).json({
+                    status: "Unauthorized",
+                    message: "You are not allowed to view this page"
                 });
-            }
 
-            // The post token is valid
-            if (postData) {
-                if (usertoken) {
-                    // User may be logged in
-                    jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
-                        if (err) {
-                            // Got an invalid user token
-                            return res.status(400).json({
-                                status: "Bad Request",
-                                message: "Invalid user token"
-                            });
-                        }
-
-                        if (authUser) {
-                            // User is logged in
-                            if (authUser.role === process.env.NORMAL_USER_ROLE) {
-                                for (let post of posts) {
-                                    if(post.id === postData.id) {
-                                        postAvailable = true;
-                                        let comments = [];
-                                        //Find the comments with a matching id of each post 
-                                        //and add them to the post's comment count
-                                        postCommentsData.forEach(comment => {
-                                            if (post.id === comment.postid) {
-                                                comments.push(comment);
-                                            };
-                                        });
-                                        
-                                        return res.status(200).json({
-                                            status: 'Success - User logged in',
-                                            userToken: usertoken,
-                                            userRole: process.env.NORMAL_USER_ROLE,
-                                            post,
-                                            commentsCount: comments.length,
-                                            comments                                        
-                                        });
-
-                                        break;
-                                    }
-                                }
-                                
-                                if (!postAvailable) 
-                                    return res.status(404).json({
-                                        status: 'Post NOT Found - User logged in',
-                                        userToken: usertoken,
-                                        userRole: process.env.NORMAL_USER_ROLE,
-                                        message: "Post with the provided postid NOT found"
-                                    });
-                            }
-
-                            if (authUser.role === process.env.ADMIN_USER_ROLE) {
-                                for (let post of posts) {
-                                    if(post.id === postData.id) {
-                                        postAvailable = true;
-                                        let comments = [];
-                                        //Find the comments with a matching id of each post 
-                                        //and add them to the post's comment count
-                                        postCommentsData.forEach(comment => {
-                                            if (post.id === comment.postid) {
-                                                comments.push(comment);
-                                            };
-                                        });
-                                        
-                                        return res.status(200).json({
-                                            status: 'Success - Admin user logged in',
-                                            userToken: usertoken,
-                                            userRole: process.env.ADMIN_USER_ROLE,
-                                            post,
-                                            commentsCount: comments.length,
-                                            comments                                        
-                                        });
-
-                                        break;
-                                    }
-                                }
-                                
-                                if (!postAvailable) 
-                                    return res.status(404).json({
-                                        status: 'Post NOT Found - Admin user logged in',
-                                        userToken: usertoken,
-                                        userRole: process.env.ADMIN_USER_ROLE,
-                                        message: "Post with the provided postid NOT found"
-                                    });
-                            }
-                        }
-                    });
-                } else {
-                    // User is not logged in
-
-                    //get post with the corresponding id
-                    for (let post of posts) {
-                        if(post.id === postData.id) {
-                            postAvailable = true;
-                            let comments = [];
-                            //Find the comments with a matching id of each post 
-                            //and add them to the post's comment count
-                            postCommentsData.forEach(comment => {
-                                if (post.id === comment.postid) {
-                                    comments.push(comment);
-                                };
-                            });
-                            return res.status(200).json({
-                                status: 'Success - Post Found - User NOT logged in',
-                                userToken: null,
-                                userRole: process.env.GUEST_USER_ROLE,
-                                post,
-                                commentsCount: comments.length,
-                                comments 
-                            });
-
-                            break;
-                        };
+            if (authUser.role === process.env.ADMIN_USER_ROLE) {
+                Post.find({}, (err, docs) => {
+                    if (err) {
+                        return res.status(500).json({
+                            Error: err
+                        })
                     }
 
-                    // post not found
-                    if (!postAvailable)
-                        return res.status(404).json({
-                            status: 'Post NOT Found - User NOT logged in',
-                            userToken: null,
-                            userRole: process.env.GUEST_USER_ROLE,
-                            message: "Post with the provided id NOT found"
-                        });
-                }
+                    if (docs.length > 0) {
+                        return res.status(200).json({
+                            status: "Success",
+                            postsCount: docs.length,
+                            posts: docs
+                        })
+                    } else {
+                        return res.status(200).json({
+                            status: "Success",
+                            message: "No posts available"
+                        })
+                    }
+                });
             }
         })
     } else {
-        // Did not supply a post token
         return res.status(400).json({
-            status: 'Bad Request',
-            message: 'You need to supply a post token'
-        });
-    };
-};
+            status: "Bad Request",
+            message: "You need to provide a usertoken"
+        })
+    }
+}
 
 export const addPost = (req, res) => {
-    const {usertoken, title, paragraphs} = req.headers;
-    if (usertoken && title && paragraphs) {
+    const { usertoken } = req.headers;
+    const { title, body, author } = req.body;
+    if (usertoken && title && body && author) {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
-                    status: "Unauthorized",
+                    status: "Forbidden",
                     message: "You need to provide a valid token"
                 });
             }
@@ -250,37 +73,41 @@ export const addPost = (req, res) => {
             }
 
             if (authUser.role === process.env.ADMIN_USER_ROLE) {
-                let postsCount = posts.length;
-                let temp = {
-                    id: ++postsCount,
+                const post = new Post({
+                    _id: new mongoose.Types.ObjectId(),
                     title,
-                    paragraphs,
-                    date_posted: new Date(),
-                    comments: 0
-                };
-                
-                jwt.sign(temp, process.env.SECRET_KEY, (err, postToken) => {
-                    posts.push({postToken, ...temp});
-                    return res.status(200).json({
-                        status: "Success",
-                        message: "Post added successfully"
-                    });
+                    body,
+                    author,
+                    date_posted: new Date()
                 });
+
+                post.save()
+                    .then(result => {
+                        return res.status(200).json({
+                            status: "Post successfully created",
+                            message: result
+                        })
+                    })
+                    .catch(err => {
+                        return res.status(500).json({
+                            Error: err
+                        })
+                    })
             };
         });
     }
 
     else res.status(400).json({
         status: 'Bad Request',
-        message: 'Please, provide all details (usertoken, title, paragraphs)'
+        message: 'Please, provide all details (usertoken, title, body, author)'
     });
 }
 
 export const deletePost = (req, res) => {
-    let deleted = false;
-    const {usertoken, posttoken} = req.headers;
+    const { usertoken } = req.headers;
+    const { postid } = req.body;
     
-    if (usertoken && posttoken) {
+    if (usertoken && postid) {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
@@ -297,50 +124,40 @@ export const deletePost = (req, res) => {
             }
 
             if (authUser.role === process.env.ADMIN_USER_ROLE) {
-                jwt.verify(posttoken, process.env.SECRET_KEY, (err, postData) => {
-                    if (err) {
-                        return res.status(400).json({
-                            status: "Bad Request",
-                            message: "Cannot delete post using invalid token"
-                        });
-                    }
-
-                    if (postData) {
-                        let index = 0;
-                        for (let post of posts) {
-                            if (post.id === postData.id) {
-                                posts.splice(index, 1);
-                                deleted = true;
-                                return res.status(200).json({
-                                    status: "Success",
-                                    message: "Post successfully deleted"
-                                });
-
-                                break;
-                            }
-                            ++index;
-                        };
-                    }
-                });
+                Post.deleteOne({ _id: postid })
+                    .exec()
+                    .then(result => {
+                        if (result.deletedCount > 0) {
+                            return res.status(200).json({
+                                status: "Post successfully deleted",
+                                message: result
+                            });
+                        } else {
+                            return res.status(404).json({
+                                status: "Not Found",
+                                message: "Cannot find a post with the provided id"
+                            })
+                        }
+                    })
+                    .catch(err => {
+                        return res.status(500).json({
+                            Error: err
+                        })
+                    })
             }
-        });
-        if (!deleted) 
-            return res.status(404).json({
-            status: "Not Found",
-            message: 'Post with the provided id not found'
         });
     }
     
     else res.status(400).json({
         status: 400,
-        message: 'Supply the usertoken and posttoken'
+        message: 'Supply the usertoken and post id'
     });
 }
 
 export const updatePost = (req, res) => {
-    let updated = false;
-    const {usertoken, posttoken, title, paragraphs} = req.headers;
-    if (usertoken && posttoken && (title || paragraphs)) {
+    const { usertoken } = req.headers;
+    let { postid, title, body, author } = req.body;
+    if (usertoken && postid && (title || body || author)) {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
@@ -357,43 +174,44 @@ export const updatePost = (req, res) => {
             }
 
             if (authUser.role === process.env.ADMIN_USER_ROLE) {
-                jwt.verify(posttoken, process.env.SECRET_KEY, (err, postData) => {
+                Post.find({_id: postid}, (err, post) => {
                     if (err) {
-                        return res.status(400).json({
-                            status: "Bad Request",
-                            message: "Cannot find a matching post due to invalid token"
-                        });
+                        return res.status(500).json({
+                            status: "Post.find error",
+                            Error: err
+                        })
                     }
 
-                    if (postData) {
-                        if (title || paragraphs) {
-                            let index = 0;
-                            for (let post of posts) {
-                                if (post.id === postData.id) {
-                                    posts[index].title = title || post.title;
-                                    posts[index].paragraphs = paragraphs || post.paragraphs;
-
-                                    return res.status(200).json({
-                                        status: "Success",
-                                        message: "Post updated successfully"
-                                    });
-
-                                    break;
-                                }
-                                ++index;
-                            }
-                        } else {
-                            return res.status(400).json({
-                                status: "Bad Request",
-                                message: "Update at least the title or paragraphs"
-                            });
-                        };
-                    };
+                    if (post) {
+                        title = title || post[0].title;
+                        body = body || post[0].body;
+                        author = author || post[0].author;
+                        
+                        Post.updateOne({ _id: postid }, { $set: { title, body, author } })
+                            .exec()
+                            .then(result => {
+                                return res.status(200).json({
+                                    status: "Post updated successfully",
+                                    message: result
+                                })
+                            })
+                            .catch(err => {
+                                return res.status(500).json({
+                                    status: "Post.update",
+                                    Error: err
+                                })
+                            })
+                    } else {
+                        return res.status(404).json({
+                            status: "Not Found",
+                            message: "Cannot find a post with the provided id"
+                        })
+                    }
                 });
             }
         });
     } else res.status(400).json({
         status: 'Bad Request',
-        message: 'You must provide the usertoken and posttoken and update at least one field: title or paragraphs'
+        message: 'You must provide the usertoken and postid and update at least one field: title, body, or author'
     });
 }

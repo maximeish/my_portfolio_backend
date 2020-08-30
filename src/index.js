@@ -7,6 +7,16 @@ import messages from './routes/messages.route';
 import postComments from './routes/post-comments.route';
 import auth from './routes/auth.route';
 import blog from './routes/blog.route';
+import mongoose from 'mongoose';
+import dotEnv from 'dotenv';
+
+dotEnv.config();
+
+mongoose.connect(`mongodb+srv://admin-user:${process.env.MONGO_ATLAS_PWD}@blogdata-cluster.9zb8m.mongodb.net/<dbname>?retryWrites=true&w=majority`, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
+    useFindAndModify: false
+});
 
 const app = express();
 const port = process.env.PORT || 3000;

@@ -10,7 +10,7 @@ dotEnv.config();
 export const getToken = (req, res, nextMiddleware) => {
     //get the auth token from the headers
     let { usertoken } = req.headers;
-    if(usertoken) {
+    if(usertoken !== undefined) {
         //Save the token to req.token and call nextMiddleware() to pass a modified req
         req.token = usertoken;
         nextMiddleware();

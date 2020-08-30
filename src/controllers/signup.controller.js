@@ -10,7 +10,6 @@ export const signup = (req, res) => {
     //Get provided values then sign user up
     let { username, email, password, role, subscribed } = req.body;
     if (username && email && password && role && subscribed) {
-
         if (!(subscribed === 'yes' || subscribed === 'no')) {
             return res.status(400).json({
                 status: "Bad Request",
@@ -19,7 +18,6 @@ export const signup = (req, res) => {
         }
 
         if (role === process.env.NORMAL_USER_ROLE || role === process.env.ADMIN_USER_ROLE) {
-
             const uniqId = new mongoose.Types.ObjectId();
             const dateJoined = new Date();
 
@@ -44,8 +42,6 @@ export const signup = (req, res) => {
                     //Save the user data to the database
                     user.save()
                         .then(result => {
-                            req.token = result.userToken;
-
                             return res.status(200).json({
                                 message: "Sign up successful",
                                 userToken: result.userToken,
@@ -53,13 +49,13 @@ export const signup = (req, res) => {
                             });
                         })
                         .catch(err => {
-                            return res.status(501).json({
-                                err
+                            return res.status(500).json({
+                                Error: err
                             });
                         }); 
                 }
                 if (err) {
-                    return res.status(501).json({
+                    return res.status(500).json({
                         status: 'Server Error',
                         message: "Failed. Please sign up again"
                     })
@@ -75,6 +71,6 @@ export const signup = (req, res) => {
 
     else res.status(400).json({
         status: 'Bad Request',
-        message: 'Please, provide all details for a user (username, email, password, role) and make sure subscribed is boolean'
+        message: 'Please, provide all details for a user (username, email, password, role) and make sure subscribed is yes or no'
     });
 }

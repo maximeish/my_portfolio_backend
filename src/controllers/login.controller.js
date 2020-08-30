@@ -15,9 +15,7 @@ export const login = (req, res) => {
             .exec()
             .then(users => {
                 if (users.length > 0) {
-                    console.log(users)
                     for (let [index, user] of users.entries()) {
-                        console.log(user.password)
                         jwt.verify(user.password, process.env.SECRET_KEY, (err, unHashedPassword) => {
                             if (email === user.email && password === unHashedPassword) {
                                 userFound = true;
@@ -32,15 +30,15 @@ export const login = (req, res) => {
                     }
 
                     if (!userFound) {
-                        return res.status(404).json({
-                            status: "User not found",
+                        return res.status(401).json({
+                            status: "User not found or invalid login credentials",
                             message: "Cannot find a user with the provided email / password combination"
                         })
                     }
 
                 } else {
-                    return res.status(200).json({
-                        status: "Success",
+                    return res.status(404).json({
+                        status: "Not Found",
                         message: "No users found"
                     })
                 }
@@ -50,5 +48,10 @@ export const login = (req, res) => {
                     Error: err
                 })
             })
+    } else {
+        return res.status(400).json({
+            status: 'Bad Request',
+            message: "You need to provide an email and password"
+        })
     }
 }

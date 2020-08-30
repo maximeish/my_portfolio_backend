@@ -12,7 +12,7 @@ export const getPosts = (req, res) => {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err)
                 return res.status(403).json({
-                    status: "Unauthorized",
+                    status: "Forbidden",
                     message: "You need to provide a valid token"
                 });
 
@@ -46,9 +46,9 @@ export const getPosts = (req, res) => {
             }
         })
     } else {
-        return res.status(403).json({
-            status: "Unauthorized",
-            message: "You need to provide an admin token"
+        return res.status(400).json({
+            status: "Bad Request",
+            message: "You need to provide a usertoken"
         })
     }
 }
@@ -60,7 +60,7 @@ export const addPost = (req, res) => {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
-                    status: "Unauthorized",
+                    status: "Forbidden",
                     message: "You need to provide a valid token"
                 });
             }

@@ -10,7 +10,7 @@ dotEnv.config();
 export const displayPreviews = (req, res) => {
     let postsLimit = 3;
 
-    let previewPosts = [];
+   let previewPosts = [];
 
     Post.find()
         .sort({ _id: -1 })

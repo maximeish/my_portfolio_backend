@@ -13,7 +13,7 @@ export const getUsers = (req, res) => {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
-                    status: "Unauthorized",
+                    status: "Forbidden",
                     message: "You are not allowed to use this feature due to invalid token"
                 });
             };

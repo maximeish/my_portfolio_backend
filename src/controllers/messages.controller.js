@@ -58,32 +58,40 @@ export const getMessages = (req, res) => {
 export const addMessage = (req, res) => {
     let { name, email, telephone, message } = req.body;
     if (name && message && (email || telephone)) {
-        email = email || null;
-        telephone = telephone || null;
-        const message = new Message({
-            _id: new mongoose.Types.ObjectId(),
-            name,
-            email,
-            telephone,
-            message,
-            date_sent: new Date()
-        });
+        let onlyLettersRegexp = /^[A-Za-z .\-]+$/ig;
+        
+        if (Boolean(name.match(onlyLettersRegexp))) {
+            email = email || null;
+            telephone = telephone || null;
+            const message = new Message({
+                _id: new mongoose.Types.ObjectId(),
+                name,
+                email,
+                telephone,
+                message,
+                date_sent: new Date()
+            });
 
-        message
-            .save()
-            .then(result => {
-                return res.status(200).json({
-                    status: "Message saved successfully",
-                    result
+            message
+                .save()
+                .then(result => {
+                    return res.status(200).json({
+                        status: "Message saved successfully",
+                        result
+                    })
                 })
-            })
-            .catch(err => {
-                return res.status(500).json({
-                    Error: err
+                .catch(err => {
+                    return res.status(500).json({
+                        Error: err
+                    })
                 })
+        } else {
+            return res.status(400).json({
+                status: "Bad Request",
+                message: "The name cannot contain numbers. And also no more than one space is allowed between the names"
             })
+        }
     }
-
     else 
         return res.status(400).json({
             status: 400,

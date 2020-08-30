@@ -33,17 +33,20 @@ describe('Tests to API user routes (from admin page)', () => {
 	it('(200 Success) GET /getUsers to get all users using admin token (usertoken)', done => {
 		chai.request(server)
 			.post('/login')
-			.set('email', adminUser_Email)
-			.set('password', adminUser_Pass)
+			.send({
+				email: adminUser_Email,
+				password: adminUser_Pass
+			})
 			.end((err, res) => {
 				if (err) done(err);
-				tokens.adminToken = res.body.token;
+				tokens.adminToken = res.body.userToken;
 				chai.request(server)
 					.get('/getUsers')
 					.set('usertoken', tokens.adminToken)
 					.end((err, res) => {
 						if (err) done(err);
 						assert.equal(res.status, 200);
+						assert.deepPropertyVal(res.body, 'status', 'Success')
 						done();
 					})
 			})
@@ -52,17 +55,20 @@ describe('Tests to API user routes (from admin page)', () => {
 	it('(403 Unauthorized) GET /getUsers with a normal user token (usertoken)', done => {
 		chai.request(server)
 			.post('/login')
-			.set('email', normalUser_Email)
-			.set('password', normalUser_Pass)
+			.send({
+				email: normalUser_Email,
+				password: normalUser_Pass
+			})
 			.end((err, res) => {
 				if (err) done(err);
-				tokens.normalUserToken = res.body.token;
+				tokens.normalUserToken = res.body.userToken;
 				chai.request(server)
 					.get('/getUsers')
 					.set('usertoken', tokens.normalUserToken)
 					.end((err, res) => {
 						if (err) done(err);
 						assert.equal(res.status, 403);
+						assert.deepPropertyVal(res.body, 'status', 'Unauthorized')
 						done();
 					})
 			})
@@ -74,17 +80,19 @@ describe('Tests to API user routes (from admin page)', () => {
 			.end((err, res) => {
 				if (err) done(err);
 				assert.equal(res.status, 403);
+				assert.deepPropertyVal(res.body, 'status', 'Unauthorized')
 				done();
 			});
 	})
 
-	it('(403 Unauthorized) GET /getUsers to get all users with an invalid user token', done => {
+	it('(403 Forbidden) GET /getUsers to get all users with an invalid user token', done => {
 		chai.request(server)
 			.get('/getUsers')
 			.set('usertoken', 'jkljkljkljj')
 			.end((err, res) => {
 				if (err) done(err);
 				assert.equal(res.status, 403);
+				assert.deepPropertyVal(res.body, 'status', 'Forbidden')
 				done();
 			});
 	})

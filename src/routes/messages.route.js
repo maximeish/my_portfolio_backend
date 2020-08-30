@@ -4,8 +4,10 @@ import { getMessages, addMessage, deleteMessage } from '../controllers/messages.
 
 const route = express.Router();
 
-route.get('/messages', (req, res) => getMessages(req, res));
+route.get('/getMessages', (req, res) => getMessages(req, res));
 
-route.post('/messages', (req, res) => addMessage(req, res));
+route.post('/addMessage', (req, res) => addMessage(req, res));
+
+route.delete('/deleteMessage', (req, res) => deleteMessage(req, res));
 
 export default route;

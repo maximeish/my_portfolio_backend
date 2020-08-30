@@ -1,6 +1,4 @@
-import postData from '../models/post-data.json';
 import jwt from 'jsonwebtoken';
-// import getTokenAsFunc from '../middlewares/getTokenAsFunc';
 import dotEnv from 'dotenv';
 import mongoose from 'mongoose';
 const Post = require('../models/posts');

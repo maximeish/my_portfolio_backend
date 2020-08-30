@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
 import mongoose from 'mongoose';
 const User = require('../models/users');
-const Post = require('../models/posts');
 
 
 dotEnv.config();

@@ -10,8 +10,8 @@ chai.use(chaiHttp);
 const tokens = {
 	adminToken: null,
 	normalUserToken: null,
-	commentToken: null,
-	samplePostid: null
+	samplePostid: null,
+	sampleCommentid: null
 }
 
 const fakeUsername = process.env.FAKE_USERNAME;
@@ -335,4 +335,158 @@ describe('Tests to API post routes', () => {
 				});
 		});
 	});
+
+	describe('Tests for CRUD features for comments to posts on the blog post page', () => {
+		
+		//add comment
+		it('(200 Success) POST to /addComment as a logged in user (usertoken, postid, comment_text)', done => {
+			chai.request(server)
+				.post('/addComment')
+				.set('usertoken', tokens.normalUserToken)
+				.send({
+					postid: tokens.samplePostid,
+					comment_text: 'hello'
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 200);
+					assert.deepPropertyVal(res.body, 'status', 'Comment added successfully');
+					tokens.sampleCommentid = res.body.post.comments[res.body.post.comments.length - 1]._id;
+					done();
+				})
+		})
+
+		it('(403 Forbidden) POST to /addComment with an invalid user token (usertoken, postid, comment_text)', done => {
+			chai.request(server)
+				.post('/addComment')
+				.set('usertoken', 'jlsdfjakfjlfjkl')
+				.send({
+					postid: tokens.samplePostid,
+					comment_text: 'hello'
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 403);
+					assert.deepPropertyVal(res.body, 'status', 'Forbidden');
+					done();
+				})
+		})
+
+		it('(400 Bad Request) POST to /addComment missing either usertoken, postid, or comment_text', done => {
+			chai.request(server)
+				.post('/addComment')
+				.set('usertoken', 'jlsdfjakfjlfjkl')
+				.send({
+					postid: tokens.samplePostid
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 400);
+					assert.deepPropertyVal(res.body, 'status', 'Bad Request');
+					done();
+				})
+		})
+
+		//update the comment
+		it('(200 Success) PUT to /updateComment as comment owner to update its text', done => {
+			chai.request(server)
+				.put('/updateComment')
+				.set('usertoken', tokens.normalUserToken)
+				.send({
+					postid: tokens.samplePostid,
+					commentid: tokens.sampleCommentid,
+					comment_text: "comment by tester"
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 200);
+					assert.deepPropertyVal(res.body, 'status', 'Comment modified');
+					done();
+				})
+		})
+
+		it('(403 Forbidden) PUT to /updateComment to update comment text with invalid user token', done => {
+			chai.request(server)
+				.put('/updateComment')
+				.set('usertoken', 'skdfjkafjaklf')
+				.send({
+					postid: tokens.samplePostid,
+					commentid: tokens.sampleCommentid,
+					comment_text: "comment by tester"
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 403);
+					assert.deepPropertyVal(res.body, 'status', 'Forbidden');
+					done();
+				})
+		})
+
+		it('(400 Bad Request) PUT to /updateComment to update comment with any missing data in postid, commentid, likes or comment_text and user token', done => {
+			chai.request(server)
+				.put('/updateComment')
+				.set('usertoken', 'skdfjkafjaklf')
+				.send({
+					commentid: tokens.sampleCommentid,
+					comment_text: "comment by tester"
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 400);
+					assert.deepPropertyVal(res.body, 'status', 'Bad Request');
+					done();
+				})
+		})
+
+		it ('(200 Success) PUT to /updateComment to like the comment', done => {
+			chai.request(server)
+				.put('/updateComment')
+				.set('usertoken', tokens.normalUserToken)
+				.send({
+					postid: tokens.samplePostid,
+					commentid: tokens.sampleCommentid,
+					likes: 1
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 200);
+					assert.deepPropertyVal(res.body, 'status', 'Success. Likes (+1)');
+					done();
+				})
+		})
+
+		it ('(200 Success) PUT to /updateComment to unlike the comment', done => {
+			chai.request(server)
+				.put('/updateComment')
+				.set('usertoken', tokens.normalUserToken)
+				.send({
+					postid: tokens.samplePostid,
+					commentid: tokens.sampleCommentid,
+					likes: 1
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 200);
+					assert.deepPropertyVal(res.body, 'status', 'Success. Likes (-1)');
+					done();
+				})
+		})
+
+		it ('(403 Unauthorized) PUT to /updateComment to try and update comment text as not the comment owner', done => {
+			chai.request(server)
+				.put('/updateComment')
+				.set('usertoken', tokens.adminToken)
+				.send({
+					postid: tokens.samplePostid,
+					commentid: tokens.sampleCommentid,
+					comment_text: "Updated by Unauthorized user"
+				})
+				.end((err, res) => {
+					if (err) done(err);
+					assert.equal(res.status, 403);
+					assert.deepPropertyVal(res.body, 'message', 'You are not authorized to edit this comment');
+					done();
+				})
+		})
+	})
 });

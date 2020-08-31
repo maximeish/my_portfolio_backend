@@ -16,7 +16,7 @@ export const addComment = (req, res) => {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
-                    status: 'Unauthorized',
+                    status: 'Forbidden',
                     message: "You are not authorized to comment due to invalid usertoken"
                 });
             }
@@ -96,21 +96,27 @@ export const deleteComment = (req, res) => {
                     .exec()
                     .then(post => {
                         if (post) {
-                            Post.findByIdAndUpdate(
-                                postid, { $pull: {"comments": {_id: commentid,  username: authUser.username} } },
-                                { safe: true, upsert: true },
-                                (err, result) => {
-                                    if (err) {
-                                        return res.status(500).json({
-                                            Error: err
-                                        })
-                                    }
+                            for (let [index, comment] of post.comments.entries()) {
+                                if (comment._id.toString() === commentid.toString() && comment.username.toString() === authUser.username.toString()) {
+                                    Post.findByIdAndUpdate(
+                                        postid, { $pull: {"comments": {_id: commentid,  username: authUser.username} } },
+                                        { safe: true, upsert: true },
+                                        (err, result) => {
+                                            if (err) {
+                                                return res.status(500).json({
+                                                    Error: err
+                                                })
+                                            }
 
-                                    return res.status(200).json({
-                                        status: "comment successfully deleted",
-                                        message: result
-                                    })
-                                });
+                                            return res.status(200).json({
+                                                status: "comment successfully deleted",
+                                                message: result
+                                            })
+                                        });
+
+                                    break;
+                                }
+                            }
                         } else {
                             return res.status(404).json({
                                 status: "Not Found",
@@ -142,7 +148,7 @@ export const updateComment = (req, res) => {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
-                    status: "Unauthorized to update comment",
+                    status: "Forbidden",
                     message: "You are not allowed to update the comment due to invalid user token"
                 });
             };

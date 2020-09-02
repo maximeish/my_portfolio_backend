@@ -134,7 +134,6 @@ export const deleteUser = (req, res) => {
 
             if (authUser) {
                 if (authUser.role === process.env.NORMAL_USER_ROLE) {
-                    console.log(authUser)
                     User.findById(authUser._id)
                         .exec()
                         .then(user => {
@@ -209,22 +208,13 @@ export const deleteUser = (req, res) => {
 
 export const updateUser = (req, res) => {
     const {usertoken} = req.headers;
-    let {username, email, password, role, subscribed} = req.body
-    if (usertoken && (username || email || password || role || subscribed)) {
+    let {userid, username, password, subscribed} = req.body;
+    if (usertoken && (userid || username || password || subscribed)) {
         if (subscribed !== undefined) {
             if (!(subscribed === 'yes' || subscribed === 'no')) {
                 return res.status(400).json({
                     status: "Bad Request",
                     message: "subscribed should be yes or no"
-                })
-            }
-        }
-
-        if (role !== undefined) {
-            if (!(role === 'admin' || role === 'user')) {
-                return res.status(400).json({
-                    status: "Bad Request",
-                    message: "role should be admin or user"
                 })
             }
         }
@@ -238,9 +228,9 @@ export const updateUser = (req, res) => {
             }
 
             if (authUser) {
-                let userid = authUser._id;
+                let userID = authUser._id;
                 if (authUser.role === process.env.NORMAL_USER_ROLE) {
-                    User.find({_id: userid}, (err, user) => {
+                    User.find({_id: userID}, (err, user) => {
                         if (err) {
                             return res.status(500).json({
                                 Error: err
@@ -248,17 +238,17 @@ export const updateUser = (req, res) => {
                         }
 
                         if (user) {
-                            if (user[0].username === authUser.username) {
-                                if (password) {
+                            if (user[0].username.toString() === authUser.username.toString()) {
+                                if (password !== undefined) {
                                     password = jwt.sign(password, process.env.SECRET_KEY)
                                 }
 
-                                email = email || user[0].email;
-                                password = password || user[0].password
+                                password = password || user[0].password;
+                                username = username || user[0].username;
                                 subscribed = subscribed || user[0].subscribed;
-                                const userToken = jwt.sign({ _id: user[0]._id, username: user[0].username, email, password, role: user[0].role, subscribed, date_joined: user[0].date_joined }, process.env.SECRET_KEY);
+                                const userToken = jwt.sign({ _id: user[0]._id, username, email: user[0].email, password, role: user[0].role, subscribed, date_joined: user[0].date_joined }, process.env.SECRET_KEY);
 
-                                User.updateOne({ _id: userid }, { $set: { userToken, email, password, subscribed } })
+                                User.updateOne({ _id: userID }, { $set: { userToken, username, email: user[0].email, password, role: user[0].role, subscribed, date_joined: user[0].date_joined } })
                                     .exec()
                                     .then(result => {
                                         return res.status(200).json({
@@ -288,6 +278,13 @@ export const updateUser = (req, res) => {
                 }
 
                 if (authUser.role === process.env.ADMIN_USER_ROLE) {
+                    if (userid === undefined) {
+                        return res.status(400).json({
+                            status: "Unauthorized",
+                            message: "You need to provide a userid"
+                        });
+                    }
+
                     User.find({_id: userid}, (err, user) => {
                         if (err) {
                             return res.status(500).json({
@@ -296,17 +293,17 @@ export const updateUser = (req, res) => {
                         }
 
                         if (user) {
-                            if (password) {
+                            if (password !== undefined) {
                                 password = jwt.sign(password, process.env.SECRET_KEY)
                             }
 
                             username = username || user[0].username;
-                            email = email || user[0].email;
                             password = password || user[0].password
-                            role = role || user[0].role;
                             subscribed = subscribed || user[0].subscribed;
+                            const userToken = jwt.sign({ _id: user[0]._id, username, email: user[0].email, password, role: user[0].role, subscribed, date_joined: user[0].date_joined }, process.env.SECRET_KEY);
 
-                            User.updateOne({ _id: userid }, { $set: { username, email, password, role, subscribed } })
+
+                            User.updateOne({ _id: userid }, { $set: { userToken, username, email: user[0].email, password, role: user[0].role, subscribed, date_joined: user[0].date_joined } })
                                 .exec()
                                 .then(result => {
                                     return res.status(200).json({
@@ -332,7 +329,7 @@ export const updateUser = (req, res) => {
     } else {
         return res.status(400).json({
             status: "Bad Request",
-            message: "Please provide a usertoken, and update at least one of these: (username, email, password, role) and make sure subscribed (if provided) is yes or no"
+            message: "Please provide a usertoken or userid, and update at least one of these: username, password, subscribed (make sure it value is yes or no)"
         });
     }
 }

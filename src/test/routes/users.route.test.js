@@ -96,4 +96,37 @@ describe('Tests to API user routes (from admin page)', () => {
 				done();
 			});
 	})
+
+	it('(403 Unauthorized) DELETE /deleteUser to delete a user from the user profile page by supplying an invalid user token (usertoken)', done => {
+		chai.request(server)
+			.delete('/deleteUser')
+			.set('usertoken', 'jkljkljkljj')
+			.end((err, res) => {
+				if (err) done(err);
+				assert.equal(res.status, 403);
+				assert.deepPropertyVal(res.body, 'status', 'Forbidden')
+				done();
+			});
+	})
+
+	it('(200 Success) DELETE /deleteUser to delete a user from the user profile page by supplying a valid user token (usertoken)', done => {
+		chai.request(server)
+			.post('/login')
+			.send({
+				email: fakeUser_Email,
+				password: fakeUser_Pass
+			})
+			.end((err, res) => {
+				if (err) done(err);
+				chai.request(server)
+					.delete('/deleteUser')
+					.set('usertoken', res.body.userToken)
+					.end((err, res) => {
+						if (err) done(err);
+						assert.equal(res.status, 200);
+						assert.deepPropertyVal(res.body, 'status', 'user successfully deleted')
+						done();
+					});
+			})
+	})
 })

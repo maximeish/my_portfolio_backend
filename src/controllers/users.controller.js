@@ -127,7 +127,7 @@ export const deleteUser = (req, res) => {
         jwt.verify(usertoken, process.env.SECRET_KEY, (err, authUser) => {
             if (err) {
                 return res.status(403).json({
-                    status: "Unauthorized",
+                    status: "Forbidden",
                     message: "You are not allowed to use this feature due to invalid token"
                 });
             }
@@ -138,7 +138,7 @@ export const deleteUser = (req, res) => {
                         .exec()
                         .then(user => {
                             if (user) {
-                                if (authUser._id === user._id) {
+                                if (authUser._id.toString() === user._id.toString()) {
                                     User.deleteOne({ _id: user._id })
                                         .exec()
                                         .then(result => {

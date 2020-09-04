@@ -60,7 +60,8 @@ export const signup = (req, res) => {
                                                 return res.status(200).json({
                                                     message: "Sign up successful",
                                                     userToken: result.userToken,
-                                                    userRole: result.role
+                                                    userRole: result.role,
+                                                    userId: result._id
                                                 });
                                             })
                                             .catch(err => {
@@ -83,8 +84,8 @@ export const signup = (req, res) => {
                                 }
 
                             } else {
-                                await newUser.save()
-                                    .then(result => {
+                                const saveUser = newUser.save();
+                                    saveUser.then(result => {
                                         return res.status(200).json({
                                             message: "Sign up successful",
                                             userToken: result.userToken,

@@ -53,6 +53,45 @@ describe("Tests to API auth routes", () => {
                 })
         });
 
+
+        it('(409 Conflict) user with existing email SIGN UP by POST to /signup and not get token', done => {
+            chai.request(server)
+                .post('/signup')
+                .send({
+                    username: fakeUsername,
+                    email: fakeUser_Email,
+                    password: fakeUser_Pass,
+                    role: normalUser_Role,
+                    subscribed: 'no'
+                })
+                .end((err, res) => {
+                    if (err) done(err);
+                    assert.equal(res.status, 409);
+                    assert.deepPropertyVal(res.body, 'status', 'Email taken');
+                    assert.isUndefined(res.body.userToken);
+                    done();
+                })
+        });
+
+        it('(409 Conflict) user with existing username SIGN UP by POST to /signup and not get token', done => {
+            chai.request(server)
+                .post('/signup')
+                .send({
+                    username: fakeUsername,
+                    email: "new_email@yahoo.com",
+                    password: fakeUser_Pass,
+                    role: normalUser_Role,
+                    subscribed: 'no'
+                })
+                .end((err, res) => {
+                    if (err) done(err);
+                    assert.equal(res.status, 409);
+                    assert.deepPropertyVal(res.body, 'status', 'Username taken');
+                    assert.isUndefined(res.body.userToken);
+                    done();
+                })
+        });
+
         it('(400 Bad Request) user SIGN UP by POST to /signup without supplying a role', done => {
             chai.request(server)
                 .post('/signup')

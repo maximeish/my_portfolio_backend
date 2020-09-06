@@ -64,7 +64,7 @@ export const displayPreviews = (req, res) => {
 
 export const getPostById = (req, res) => {    
     let { usertoken } = req.headers, postAvailable = false;
-    let { postid } = req.body;
+    let { postid } = req.params;
 
     if (postid) {
         Post.findById(postid)
@@ -133,7 +133,14 @@ export const getPostById = (req, res) => {
         // Did not supply a post id
         return res.status(400).json({
             status: 'Bad Request',
-            message: 'You need to supply a post ID'
+            message: 'You need to supply a post ID as a parameter'
         });
     };
 };
+
+export const getNoPost = (req, res) => {
+    return res.status(400).json({
+        status: "Bad Request",
+        message: "You need to supply a Post ID as a parameter"
+    });
+}

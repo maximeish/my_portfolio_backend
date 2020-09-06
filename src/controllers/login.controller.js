@@ -22,7 +22,8 @@ export const login = (req, res) => {
                                 return res.status(200).json({
                                     status: "Login successful",
                                     userRole: user.role,
-                                    userToken: user.userToken
+                                    userToken: user.userToken,
+                                    userId: user._id
                                 })
                             }
                         })

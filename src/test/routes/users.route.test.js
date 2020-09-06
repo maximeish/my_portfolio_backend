@@ -12,6 +12,7 @@ const tokens = {
 	normalUserToken: null,
 	commentToken: null,
 	postToken: null,
+	fakeUserId: null
 }
 
 const fakeUsername = process.env.FAKE_USERNAME;
@@ -121,6 +122,33 @@ describe('Tests to API user routes (from admin page)', () => {
 				chai.request(server)
 					.delete('/deleteUser')
 					.set('usertoken', res.body.userToken)
+					.end((err, res) => {
+						if (err) done(err);
+						assert.equal(res.status, 200);
+						assert.deepPropertyVal(res.body, 'status', 'user successfully deleted')
+						done();
+					});
+			})
+	})
+
+	it('(200 Success) DELETE /deleteUser to delete a user from the admin page by supplying a valid admin user token (usertoken) and a userid (userid)', done => {
+		chai.request(server)
+            .post('/signup')
+            .send({
+                username: fakeUsername,
+                email: fakeUser_Email,
+                password: fakeUser_Pass,
+                role: normalUser_Role,
+                subscribed: 'no'
+            })
+			.end((err, res) => {
+				if (err) done(err);
+				chai.request(server)
+					.delete('/deleteUser')
+					.set('usertoken', tokens.adminToken)
+					.send({
+						userid: res.body.userId
+					})
 					.end((err, res) => {
 						if (err) done(err);
 						assert.equal(res.status, 200);

@@ -220,12 +220,9 @@ describe('Tests to API post routes', () => {
 
 
 	describe('Tests for retrieving posts from the blog page', () => {
-		it('(200 Success) GET /blogPost to get a blog post using its postid as a not logged in user (postid)', done => {
+		it('(200 Success) GET /blogpost/:postid to get a blog post using its postid as a not logged in user (postid)', done => {
 			chai.request(server)
-				.get('/blogPost')
-				.send({
-					postid: tokens.samplePostid
-				})
+				.get(`/blogpost/${tokens.samplePostid}`)
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);
@@ -234,9 +231,9 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(400 Bad Request) GET /blogPost to get a blog post without the postid as a not logged in user', done => {
+		it('(400 Bad Request) GET /blogpost to get a blog post without the postid as a not logged in user', done => {
 			chai.request(server)
-				.get('/blogPost')
+				.get('/blogpost')
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 400);
@@ -245,12 +242,9 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(500 Server Error) GET /blogPost to get a blog post with an invalid postid as a not logged in user (postid)', done => {
+		it('(500 Server Error) GET /blogpost/:postid to get a blog post with an invalid postid as a not logged in user (postid)', done => {
 			chai.request(server)
-				.get('/blogPost')
-				.send({
-					postid: 85034
-				})
+				.get('/blogpost/alkjfklafjldf')
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 500);
@@ -260,13 +254,10 @@ describe('Tests to API post routes', () => {
 		});
 
 
-		it('(200 Success) GET /blogPost to get a blog post using its postid as a logged in normal user (usertoken, postid)', done => {
+		it('(200 Success) GET /blogpost/:postid to get a blog post using its postid as a logged in normal user (usertoken, postid)', done => {
 			chai.request(server)
-				.get('/blogPost')
+				.get(`/blogpost/${tokens.samplePostid}`)
 				.set('usertoken', tokens.normalUserToken)
-				.send({
-					postid: tokens.samplePostid
-				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);
@@ -275,13 +266,10 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(200 Success) GET /blogPost to get a blog post using its valid postid but with an invalid usertoken (usertoken, postid)', done => {
+		it('(200 Success) GET /blogpost/:postid to get a blog post using its valid postid but with an invalid usertoken (usertoken, postid)', done => {
 			chai.request(server)
-				.get('/blogPost')
+				.get(`/blogpost/${tokens.samplePostid}`)
 				.set('usertoken', 'askdfjadwfjal')
-				.send({
-					postid: tokens.samplePostid
-				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);
@@ -290,13 +278,10 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(404 Not Found) GET /blogPost to get a blog post using an invalid postid but with a valid normal usertoken (usertoken, postid)', done => {
+		it('(404 Not Found) GET /blogpost/:postid to get a blog post using a non-existing but valid postid with a valid normal usertoken (usertoken, postid)', done => {
 			chai.request(server)
-				.get('/blogPost')
+				.get('/blogpost/5f4a2aff5039fe35fe86dbb5')
 				.set('usertoken', tokens.normalUserToken)
-				.send({
-					postid: '5f4a2aff5039fe35fe86dbb5'
-				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 404);
@@ -305,13 +290,10 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(404 Not Found) GET /blogPost to get a blog post using an invalid postid with also an invalid usertoken (usertoken, postid)', done => {
+		it('(404 Not Found) GET /blogpost/:postid to get a blog post using a non-existing but valid postid with an invalid usertoken (usertoken, postid)', done => {
 			chai.request(server)
-				.get('/blogPost')
+				.get('/blogpost/5f4a2aff5039fe35fe86dbb5')
 				.set('usertoken', 'ksjdfkladfjkldfjk')
-				.send({
-					postid: '5f4a2aff5039fe35fe86dbb5'
-				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 404);
@@ -320,13 +302,10 @@ describe('Tests to API post routes', () => {
 				});
 		});
 
-		it('(200 Success) GET /blogPost to get a blog post using its postid as a logged in admin user (usertoken, postid)', done => {
+		it('(200 Success) GET /blogpost/:postid to get a blog post using its postid as a logged in admin user (usertoken, postid)', done => {
 			chai.request(server)
-				.get('/blogPost')
+				.get(`/blogpost/${tokens.samplePostid}`)
 				.set('usertoken', tokens.adminToken)
-				.send({
-					postid: tokens.samplePostid
-				})
 				.end((err, res) => {
 					if (err) done(err);
 					assert.equal(res.status, 200);
